@@ -7,14 +7,12 @@ package najmensimodel2;
 
 import core.Constant;
 import core.Program;
+import core.Router;
 import core.Rule;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -25,25 +23,26 @@ import java.util.stream.Stream;
  */
 public class NajmensiModel2 {
 
-    static Map<String, Program> programs = new HashMap<>();
+    static Router router = new Router();
 
-    public static ArrayList<Rule> readRulesFromFile() {
-        ArrayList<Rule> rules = new ArrayList<>();
+    public static ArrayList<Program> readRulesFromFile() {
+        ArrayList<Program> programs;
+        programs = new ArrayList<>();
 
         try (Stream<String> stream = Files.lines(Paths.get("rules.txt"))) {
             stream.forEach((String line) -> {
-                line = line.replaceAll(" ", "");
+                line = line.trim().replaceAll(" ", "");
                 if (!line.isEmpty()) {
                     if (line.charAt(0) == '#') {
                         // create instance of new program
-                        String programName = line.charAt(1) + "";
-                        Program newprogram = new Program(programName, new ArrayList<>(), programs);
-                        programs.put(programName, newprogram);
+                        String programName = line.substring(1);
+                        Program newprogram = new Program(programName);
+
+                        programs.add(newprogram);
 //                        System.out.println("new program, name: " + programName);
                     } else {
                         String[] splitted = line.split(":-", 2);
                         Rule r = new Rule();
-                        rules.add(r);
 
                         if (!splitted[0].isEmpty()) {
                             r.setHead(new Constant(splitted[0]));
@@ -54,26 +53,34 @@ public class NajmensiModel2 {
                                 r.addToBody(new Constant(bodyLit));
                             }
                         }
+
+                        if (!programs.isEmpty()) {
+                            programs.get(programs.size() - 1).addRule(r);
+                        }
+
                     }
                 }
             });
         } catch (IOException ex) {
             Logger.getLogger(NajmensiModel2.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return rules;
+        return programs;
     }
 
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        ArrayList<Rule> rules = readRulesFromFile();
-        System.out.println(rules);
-        System.out.println(programs);
-//        System.out.println("NajmensiModel.TreeSolver");
-//        TreeSolver ts = new TreeSolver(rules);
-////        System.out.println(ts.getTrees());
-//        System.out.println(ts.findSmallestModel());
+        ArrayList<Program> programs = readRulesFromFile();
+
+        programs.stream().forEach((Program p) -> {
+            p.setRouter(router);
+            router.addProgram(p);
+        });
+
+        router.getPrograms().forEach((String name, Program p) -> {
+            System.out.println(name + ": " + p.getRules() + " (needed: " + p.getExternalsNeeded() + ")");
+        });
     }
 
 }
