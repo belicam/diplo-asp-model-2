@@ -78,9 +78,8 @@ public class NajmensiModel2 {
             router.addProgram(p);
         });
 
-        router.getPrograms().forEach((String name, Program p) -> {
-            System.out.println(name + ": " + p.getRules() + " (needed: " + p.getExternalsNeeded() + ")");
-        });
+        Thread t = new Thread(programs.get(0));
+        t.start();
     }
 
 }

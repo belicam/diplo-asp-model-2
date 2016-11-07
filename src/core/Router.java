@@ -13,20 +13,24 @@ import java.util.Map;
  * @author martin
  */
 public class Router {
+
     private Map<String, Program> programs;
 
     public Router() {
         this.programs = new HashMap<>();
     }
-    
+
     public void addProgram(Program p) {
         getPrograms().put(p.getLabel(), p);
     }
-    
+
     public void sendMessage(String programName, Object message) {
+        System.out.println("core.Router.sendMessage()" + programName);
+        Program p = getPrograms().get(programName);
         
+//        todo vymyslet tvar message
     }
-    
+
     /**
      * @return the programs
      */

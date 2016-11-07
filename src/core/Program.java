@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  *
@@ -18,7 +19,7 @@ public class Program implements Runnable {
 
     private String label;
     private List<Rule> rules = new ArrayList<>();
-    private Set<String> externalsNeeded = new HashSet<>();
+    private LinkedBlockingQueue<Literal> messages = new LinkedBlockingQueue<>();
     private Router router;
 
     public Program(String label) {
@@ -29,15 +30,22 @@ public class Program implements Runnable {
         this.label = label;
         this.router = router;
     }
+    
+    public boolean get(Literal lit) {
+//        todo
+        return false;
+    }
 
-    public void fire() {
+    public void fire(Literal lit, boolean isInModel) {
 //         todo odvodit co sa da
-//         todo pytat sa na externalLiterals
+//         todo pytat sa na messages
     }
 
     @Override
     public void run() {
-        System.out.println(this.getLabel());
+        System.out.println("Run: " + this.getLabel());
+        this.rules.forEach((r) -> checkRule(r));
+        System.out.println(this.messages);
     }
 
     /**
@@ -56,8 +64,6 @@ public class Program implements Runnable {
 
     public void addRule(Rule r) {
         this.rules.add(r);
-
-        checkRule(r);
     }
 
     /**
@@ -72,8 +78,6 @@ public class Program implements Runnable {
      */
     public void setRules(List<Rule> rules) {
         this.rules = rules;
-
-        this.rules.forEach((r) -> checkRule(r));
     }
 
     /**
@@ -93,22 +97,15 @@ public class Program implements Runnable {
     /**
      * @return the externalsNeeded
      */
-    public Set<String> getExternalsNeeded() {
-        return externalsNeeded;
-    }
-
-    /**
-     * @param externalNeeded the externalsNeeded to set
-     */
-    public void setExternalsNeeded(Set<String> externalNeeded) {
-        this.externalsNeeded = externalNeeded;
+    public LinkedBlockingQueue<Literal> getMessages() {
+        return messages;
     }
 
     private void checkRule(Rule r) {
         r.getBody().stream().forEach((Literal lit) -> {
             String litRef = lit.getValue().split(":")[0];
             if (!litRef.equals(this.label)) {
-                getExternalsNeeded().add(litRef);
+                getMessages().add(lit);
             }
         });
     }
