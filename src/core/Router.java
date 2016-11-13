@@ -25,10 +25,8 @@ public class Router {
     }
 
     public void sendMessage(String programName, Object message) {
-        System.out.println("core.Router.sendMessage()" + programName);
-        Program p = getPrograms().get(programName);
-        
-//        todo vymyslet tvar message
+        System.out.println("Router.sendMessage() to: " + programName);
+        getPrograms().get(programName).receiveMessage(message);
     }
 
     /**

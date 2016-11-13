@@ -13,9 +13,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
+import messages.InitMessage;
 
 /**
  *
@@ -72,14 +76,16 @@ public class NajmensiModel2 {
      */
     public static void main(String[] args) {
         ArrayList<Program> programs = readRulesFromFile();
-
+        ExecutorService executor = Executors.newCachedThreadPool();
+        
         programs.stream().forEach((Program p) -> {
             p.setRouter(router);
             router.addProgram(p);
+            executor.execute(p);
         });
-
-        Thread t = new Thread(programs.get(0));
-        t.start();
+        programs.get(0).receiveMessage(new InitMessage());
+//        todo poslat init message + implementovat classes pre message
+        executor.shutdown();
     }
 
 }
