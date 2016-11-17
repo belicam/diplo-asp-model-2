@@ -5,26 +5,22 @@
  */
 package messages;
 
-import core.Literal;
-
 /**
  *
  * @author martin
  */
-public class GetMessage {
+public class ActivationMessage {
     private String senderLabel;
-    private Literal lit;
-    
-    public GetMessage(String senderLabel, Literal lit) {
+
+    public ActivationMessage(String senderLabel) {
         this.senderLabel = senderLabel;
-        this.lit = lit;
     }
     
     @Override
     public String toString() {
-        return "GetMessage: Program#" + senderLabel + " asks for " + lit;
+        return "ActivationMessage sent from Program#" + senderLabel + ".";
     }
-
+    
     /**
      * @return the senderLabel
      */
@@ -33,23 +29,9 @@ public class GetMessage {
     }
 
     /**
-     * @return the lit
-     */
-    public Literal getLit() {
-        return lit;
-    }
-
-    /**
      * @param senderLabel the senderLabel to set
      */
     public void setSenderLabel(String senderLabel) {
         this.senderLabel = senderLabel;
-    }
-
-    /**
-     * @param lit the lit to set
-     */
-    public void setLit(Literal lit) {
-        this.lit = lit;
     }
 }

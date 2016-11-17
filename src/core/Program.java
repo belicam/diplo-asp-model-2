@@ -15,9 +15,13 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import messages.FireMessage;
-import messages.GetMessage;
+import messages.ActivationMessage;
+import messages.FireRequestMessage;
+import messages.FireResponseMessage;
+import messages.GetRequestMessage;
+import messages.GetResponseMessage;
 import messages.InitMessage;
+import messages.NotifyParticipationMessage;
 
 /**
  *
@@ -25,14 +29,18 @@ import messages.InitMessage;
  */
 public class Program implements Runnable {
 
+    private boolean isInitialProgram = false;
+    private final Set<String> participatedPrograms = new HashSet<>();
     private String label;
     private List<Rule> rules = new ArrayList<>();
 
     private Router router;
 
-    private BlockingQueue<Object> messages = new LinkedBlockingQueue<>();
-    private Map<Literal, Boolean> asked = new HashMap<>();
-    private Set<Literal> smallestModel = new HashSet<>();
+    private String parent = null;
+    private final BlockingQueue<Object> messages = new LinkedBlockingQueue<>();
+    private final Map<String, Boolean> children = new HashMap<>();
+    private final Map<String, List<Literal>> askedLiterals = new HashMap<>();
+    private final Set<Literal> smallestModel = new HashSet<>();
 
     public Program(String label) {
         this.label = label;
@@ -62,26 +70,110 @@ public class Program implements Runnable {
 
     private void processMessage(Object message) {
         if (message != null) {
-            System.out.println("Program#" + this.label + ": " + message);
-            if (message instanceof GetMessage) {
-//                todo check literal, send value || ask for external
-
-                checkRules();
-                String from = ((GetMessage) message).getSenderLabel();
-                Literal askedLit = ((GetMessage) message).getLit();
-                if (smallestModel.contains(askedLit)) {
-                    router.sendMessage(from, new FireMessage(this.label, askedLit, Boolean.TRUE));
-                }
-            } else if (message instanceof FireMessage) {
-//                todo save value of external 
-                Literal resolvedLit = ((FireMessage) message).getLit();
-                Boolean isInModel = ((FireMessage) message).getIsInModel();
-//                todo nedokoncene
+            if (message instanceof GetRequestMessage) {
+                processGetRequest(message);
+            } else if (message instanceof GetResponseMessage) {
+                processGetResponse(message);
+            } else if (message instanceof FireRequestMessage) {
+                processFireRequest(message);
+            } else if (message instanceof FireResponseMessage) {
+                processFireResponse(message);
+            } else if (message instanceof ActivationMessage) {
+                processActivation(message);
+            } else if (message instanceof NotifyParticipationMessage) {
+                processNotifyParticipation(message);
             } else if (message instanceof InitMessage) {
-//                todo odvodit co sa da, vyhladat externe a rozoslat spravy                
-                checkRules();
+                processInit();
             }
         }
+    }
+
+    private void processGetRequest(Object message) {
+        String from = ((GetRequestMessage) message).getSenderLabel();
+        String initialSender = ((GetRequestMessage) message).getInitialSender();
+
+/* asi zbytocne kontrolovat | ak funguje alg spravne, get je od kazdeho max raz
+        if (!this.askedLiterals.containsKey(from)) {
+            this.askedLiterals.put(from, new ArrayList<>());
+        }
+
+        this.askedLiterals.get(from).addAll(((GetRequestMessage) message).getLits());
+*/
+
+        this.askedLiterals.put(from, ((GetRequestMessage) message).getLits());
+
+        if ((this.parent != null) || this.isInitialProgram) {
+            getRouter().sendMessage(from, new GetResponseMessage(this.label));
+            return;
+        }
+
+        this.parent = from;
+        checkRules(initialSender);
+        getRouter().sendMessage(initialSender, new NotifyParticipationMessage(this.label));
+    }
+
+    private void processGetResponse(Object message) {
+        String from = ((GetResponseMessage) message).getSenderLabel();
+        if (!children.get(from)) {
+            children.put(from, Boolean.TRUE);
+
+            if (!children.containsValue(Boolean.FALSE)) {
+                if (!this.isInitialProgram) {
+                    getRouter().sendMessage(this.parent, new GetResponseMessage(this.label));
+                } else {
+//                    fire to all participated
+                    activate();
+                    participatedPrograms.forEach(name -> getRouter().sendMessage(name, new ActivationMessage(this.label)));
+                }
+            }
+        }
+    }
+
+    private void processFireRequest(Object message) {
+//        todo
+    }
+
+    private void processFireResponse(Object message) {
+//        todo
+    }
+
+    private void processActivation(Object message) {
+//        todo odvodit co sa da, pozret pytane literaly -> poslat fire 
+        activate();
+    }
+
+    private void processNotifyParticipation(Object message) {
+        participatedPrograms.add(((NotifyParticipationMessage) message).getSenderLabel());
+    }
+
+    private void processInit() {
+        this.isInitialProgram = true;
+        checkRules(this.label);
+    }
+
+    private void activate() {
+        System.out.println("Program#" + label + " is asked to share these literals: " + askedLiterals);
+    }
+
+    private void checkRules(String initialSender) {
+        Map<String, List<Literal>> externals = new HashMap<>();
+
+        rules.forEach(rule -> {
+            rule.getBody().stream().forEach(lit -> {
+                String litRef = lit.getValue().split(":")[0];
+                if (!litRef.equals(this.label)) {
+                    if (!externals.containsKey(litRef)) {
+                        externals.put(litRef, new ArrayList<>());
+                    }
+                    externals.get(litRef).add(lit);
+                }
+            });
+        });
+
+        externals.keySet().forEach(key -> {
+            getRouter().sendMessage(key, new GetRequestMessage(label, initialSender, externals.get(key)));
+            children.put(key, Boolean.FALSE);
+        });
     }
 
     /**
@@ -135,23 +227,5 @@ public class Program implements Runnable {
      */
     public BlockingQueue<Object> getMessages() {
         return messages;
-    }
-
-    private void checkRules() {
-        rules.forEach((Rule r) -> {
-            if (r.isFact()) {
-                smallestModel.add(r.getHead());
-            } else {
-                r.getBody().stream().forEach((Literal lit) -> {
-                    String litRef = lit.getValue().split(":")[0];
-                    if (!litRef.equals(this.label)) {
-                        if (!asked.containsKey(lit)) {
-                            getRouter().sendMessage(litRef, new GetMessage(this.label, lit));
-                            asked.put(lit, Boolean.FALSE);
-                        }
-                    }
-                });
-            }
-        });
     }
 }

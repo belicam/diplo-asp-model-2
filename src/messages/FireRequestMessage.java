@@ -6,25 +6,26 @@
 package messages;
 
 import core.Literal;
+import java.util.List;
 
 /**
  *
  * @author martin
  */
-public class FireMessage {
+public class FireRequestMessage {
     private String senderLabel;
-    private Literal lit;
+    private List<Literal> lits;
     private Boolean isInModel;
     
-    public FireMessage(String senderLabel, Literal lit, Boolean isInModel) {
+    public FireRequestMessage(String senderLabel, List<Literal> lits, Boolean isInModel) {
         this.senderLabel = senderLabel;
-        this.lit = lit;
+        this.lits = lits;
         this.isInModel = isInModel;
     }
 
     @Override
     public String toString() {
-        return "FireMessage: Program#" + senderLabel + " sends " + lit + " value: " + isInModel;
+        return "FireRequestMessage: Program#" + senderLabel + " sends " + lits + " value: " + isInModel;
     }
 
     /**
@@ -42,17 +43,17 @@ public class FireMessage {
     }
 
     /**
-     * @return the lit
+     * @return the lits
      */
-    public Literal getLit() {
-        return lit;
+    public List<Literal> getLits() {
+        return lits;
     }
 
     /**
-     * @param lit the lit to set
+     * @param lits the lits to set
      */
-    public void setLit(Literal lit) {
-        this.lit = lit;
+    public void setLits(List<Literal> lits) {
+        this.lits = lits;
     }
 
     /**

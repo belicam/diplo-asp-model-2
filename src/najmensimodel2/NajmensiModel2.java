@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -83,7 +82,7 @@ public class NajmensiModel2 {
             router.addProgram(p);
             executor.execute(p);
         });
-        programs.get(0).receiveMessage(new InitMessage());
+        router.sendMessage(programs.get(0).getLabel(), new InitMessage());
 //        todo poslat init message + implementovat classes pre message
         executor.shutdown();
     }

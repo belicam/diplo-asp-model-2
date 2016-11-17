@@ -25,7 +25,8 @@ public class Router {
     }
 
     public void sendMessage(String programName, Object message) {
-        System.out.println("Router.sendMessage() to: " + programName);
+        System.out.println("`" + message + "` sent to: Program#" + programName);
+
         getPrograms().get(programName).receiveMessage(message);
     }
 
