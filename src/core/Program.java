@@ -39,7 +39,7 @@ public class Program implements Runnable {
     private String parent = null;
     private final BlockingQueue<Object> messages = new LinkedBlockingQueue<>();
     private final Map<String, Boolean> children = new HashMap<>();
-    private final Map<String, List<Literal>> askedLiterals = new HashMap<>();
+    private final Map<Literal, List<String>> askedLiterals = new HashMap<>();
     private final Set<Literal> smallestModel = new HashSet<>();
 
     public Program(String label) {
@@ -92,16 +92,13 @@ public class Program implements Runnable {
         String from = ((GetRequestMessage) message).getSenderLabel();
         String initialSender = ((GetRequestMessage) message).getInitialSender();
 
-/* asi zbytocne kontrolovat | ak funguje alg spravne, get je od kazdeho max raz
-        if (!this.askedLiterals.containsKey(from)) {
-            this.askedLiterals.put(from, new ArrayList<>());
-        }
-
-        this.askedLiterals.get(from).addAll(((GetRequestMessage) message).getLits());
-*/
-
-        this.askedLiterals.put(from, ((GetRequestMessage) message).getLits());
-
+        ((GetRequestMessage) message).getLits().forEach(lit -> {
+            if (!this.askedLiterals.containsKey(lit)) {
+                this.askedLiterals.put(lit, new ArrayList<>());
+            }
+            this.askedLiterals.get(lit).add(from);
+        });
+        
         if ((this.parent != null) || this.isInitialProgram) {
             getRouter().sendMessage(from, new GetResponseMessage(this.label));
             return;
