@@ -82,8 +82,8 @@ public class NajmensiModel2 {
             router.addProgram(p);
             executor.execute(p);
         });
+
         router.sendMessage(programs.get(0).getLabel(), new InitMessage());
-//        todo poslat init message + implementovat classes pre message
         executor.shutdown();
     }
 
