@@ -11,6 +11,7 @@ package core;
  */
 public abstract class Literal implements Comparable<Literal> {
     protected String value;
+    private String programLabel;
     
         /**
      * @return the value
@@ -24,6 +25,21 @@ public abstract class Literal implements Comparable<Literal> {
      */
     public void setValue(String value) {
         this.value = value;
+        this.setProgramLabel(value.split(":")[0]);
+    }
+
+    /**
+     * @return the programLabel
+     */
+    public String getProgramLabel() {
+        return programLabel;
+    }
+
+    /**
+     * @param programLabel the programLabel to set
+     */
+    public void setProgramLabel(String programLabel) {
+        this.programLabel = programLabel;
     }
 
 }

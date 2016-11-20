@@ -62,7 +62,7 @@ public class Rule {
         String h = this.head == null ? "" : this.head.toString();
         String b = this.body.isEmpty() ? "" : this.body.toString();
 
-        return h + " <- " + b;
+        return h + " :- " + b;
     }
 
     public boolean isFact() {

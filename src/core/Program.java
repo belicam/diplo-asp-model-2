@@ -16,12 +16,14 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import messages.ActivationMessage;
+import messages.DependencyGraphBuiltMessage;
 import messages.FireRequestMessage;
 import messages.FireResponseMessage;
 import messages.GetRequestMessage;
 import messages.GetResponseMessage;
 import messages.InitMessage;
-import messages.NotifyParticipationMessage;
+import messages.NotifyParticipationRequestMessage;
+import messages.NotifyParticipationResponseMessage;
 
 /**
  *
@@ -30,6 +32,7 @@ import messages.NotifyParticipationMessage;
 public class Program implements Runnable {
 
     private boolean isInitialProgram = false;
+    private boolean notifyParticipationConfirmed = false;
     private final Set<String> participatedPrograms = new HashSet<>();
     private String label;
     private List<Rule> rules = new ArrayList<>();
@@ -37,8 +40,8 @@ public class Program implements Runnable {
     private Router router;
 
     private String parent = null;
+    private Map<String, Boolean> children = null;
     private final BlockingQueue<Object> messages = new LinkedBlockingQueue<>();
-    private final Map<String, Boolean> children = new HashMap<>();
     private final Map<Literal, List<String>> askedLiterals = new HashMap<>();
     private final Set<Literal> smallestModel = new HashSet<>();
 
@@ -80,8 +83,12 @@ public class Program implements Runnable {
                 processFireResponse(message);
             } else if (message instanceof ActivationMessage) {
                 processActivation(message);
-            } else if (message instanceof NotifyParticipationMessage) {
-                processNotifyParticipation(message);
+            } else if (message instanceof NotifyParticipationRequestMessage) {
+                processNotifyParticipationRequest(message);
+            } else if (message instanceof NotifyParticipationResponseMessage) {
+                processNotifyParticipationResponse(message);
+            } else if (message instanceof DependencyGraphBuiltMessage) {
+                processDependencyGraphBuilt();
             } else if (message instanceof InitMessage) {
                 processInit();
             }
@@ -98,15 +105,14 @@ public class Program implements Runnable {
             }
             this.askedLiterals.get(lit).add(from);
         });
-        
-        if ((this.parent != null) || this.isInitialProgram) {
-            getRouter().sendMessage(from, new GetResponseMessage(this.label));
-            return;
-        }
 
-        this.parent = from;
-        checkRules(initialSender);
-        getRouter().sendMessage(initialSender, new NotifyParticipationMessage(this.label));
+        if (this.children != null) {
+            getRouter().sendMessage(from, new GetResponseMessage(this.label));
+        } else {
+            this.parent = from;
+            checkRules(initialSender);
+            getRouter().sendMessage(initialSender, new NotifyParticipationRequestMessage(this.label));
+        }
     }
 
     private void processGetResponse(Object message) {
@@ -114,15 +120,7 @@ public class Program implements Runnable {
         if (!children.get(from)) {
             children.put(from, Boolean.TRUE);
 
-            if (!children.containsValue(Boolean.FALSE)) {
-                if (!this.isInitialProgram) {
-                    getRouter().sendMessage(this.parent, new GetResponseMessage(this.label));
-                } else {
-//                    fire to all participated
-                    activate();
-                    participatedPrograms.forEach(name -> getRouter().sendMessage(name, new ActivationMessage(this.label)));
-                }
-            }
+            checkChildrenResponses();
         }
     }
 
@@ -139,12 +137,26 @@ public class Program implements Runnable {
         activate();
     }
 
-    private void processNotifyParticipation(Object message) {
-        participatedPrograms.add(((NotifyParticipationMessage) message).getSenderLabel());
+    private void processNotifyParticipationRequest(Object message) {
+        String senderLabel = ((NotifyParticipationRequestMessage) message).getSenderLabel();
+
+        participatedPrograms.add(senderLabel);
+        getRouter().sendMessage(senderLabel, new NotifyParticipationResponseMessage(this.label));
+    }
+
+    private void processNotifyParticipationResponse(Object message) {
+        this.notifyParticipationConfirmed = true;
+        checkChildrenResponses();
+    }
+
+    private void processDependencyGraphBuilt() {
+        activate();
+        participatedPrograms.forEach(name -> getRouter().sendMessage(name, new ActivationMessage(this.label)));
     }
 
     private void processInit() {
         this.isInitialProgram = true;
+        this.notifyParticipationConfirmed = true;
         checkRules(this.label);
     }
 
@@ -152,12 +164,22 @@ public class Program implements Runnable {
         System.out.println("Program#" + label + " is asked to share these literals: " + askedLiterals);
     }
 
+    private void checkChildrenResponses() {
+        if (!children.containsValue(Boolean.FALSE) && this.notifyParticipationConfirmed) {
+            if (!this.isInitialProgram) {
+                getRouter().sendMessage(this.parent, new GetResponseMessage(this.label));
+            } else {
+                getRouter().sendMessage(this.label, new DependencyGraphBuiltMessage());
+            }
+        }
+    }
+
     private void checkRules(String initialSender) {
         Map<String, List<Literal>> externals = new HashMap<>();
 
         rules.forEach(rule -> {
             rule.getBody().stream().forEach(lit -> {
-                String litRef = lit.getValue().split(":")[0];
+                String litRef = lit.getProgramLabel();
                 if (!litRef.equals(this.label)) {
                     if (!externals.containsKey(litRef)) {
                         externals.put(litRef, new ArrayList<>());
@@ -167,6 +189,7 @@ public class Program implements Runnable {
             });
         });
 
+        children = new HashMap<>();
         externals.keySet().forEach(key -> {
             getRouter().sendMessage(key, new GetRequestMessage(label, initialSender, externals.get(key)));
             children.put(key, Boolean.FALSE);

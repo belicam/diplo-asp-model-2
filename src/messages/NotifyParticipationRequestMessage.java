@@ -9,16 +9,16 @@ package messages;
  *
  * @author martin
  */
-public class NotifyParticipationMessage {
+public class NotifyParticipationRequestMessage {
     private String senderLabel;
     
-    public NotifyParticipationMessage(String senderLabel) {
+    public NotifyParticipationRequestMessage(String senderLabel) {
         this.senderLabel = senderLabel;
     }
     
     @Override
     public String toString() {
-        return "NotifyParticipationMessage: Program#" + senderLabel + " is participating.";
+        return "NotifyParticipationRequestMessage: Program#" + senderLabel + " is participating.";
     }
 
     /**

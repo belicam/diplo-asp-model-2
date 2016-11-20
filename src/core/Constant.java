@@ -11,10 +11,11 @@ import java.util.Objects;
  *
  * @author martin
  */
-public class Constant extends Literal { 
+public class Constant extends Literal {
 
     public Constant(String value) {
         this.value = value;
+        this.setProgramLabel(value.split(":")[0]);
     }
 
     @Override
