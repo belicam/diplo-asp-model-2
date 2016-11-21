@@ -18,7 +18,7 @@ public class NotifyParticipationResponseMessage {
     
     @Override
     public String toString() {
-        return "NotifyParticipationResponseMessage: Program#" + senderLabel + " is participating.";
+        return "NotifyParticipationResponseMessage: participation confirmed";
     }
 
     /**

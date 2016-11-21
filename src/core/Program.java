@@ -24,6 +24,7 @@ import messages.GetResponseMessage;
 import messages.InitMessage;
 import messages.NotifyParticipationRequestMessage;
 import messages.NotifyParticipationResponseMessage;
+import messages.StopMessage;
 
 /**
  *
@@ -33,6 +34,7 @@ public class Program implements Runnable {
 
     private boolean isInitialProgram = false;
     private boolean notifyParticipationConfirmed = false;
+    private boolean running;
     private final Set<String> participatedPrograms = new HashSet<>();
     private String label;
     private List<Rule> rules = new ArrayList<>();
@@ -47,17 +49,19 @@ public class Program implements Runnable {
 
     public Program(String label) {
         this.label = label;
+        this.running = true;
     }
 
     public Program(String label, Router router) {
         this.label = label;
         this.router = router;
+        this.running = true;
     }
 
     @Override
     public void run() {
         System.out.println("Run: " + this.getLabel());
-        while (true) {
+        while (isRunning()) {
             try {
                 Object message = getMessages().take();
                 processMessage(message);
@@ -89,6 +93,8 @@ public class Program implements Runnable {
                 processNotifyParticipationResponse(message);
             } else if (message instanceof DependencyGraphBuiltMessage) {
                 processDependencyGraphBuilt();
+            } else if (message instanceof StopMessage) {
+                this.setRunning(false);
             } else if (message instanceof InitMessage) {
                 processInit();
             }
@@ -101,9 +107,9 @@ public class Program implements Runnable {
 
         ((GetRequestMessage) message).getLits().forEach(lit -> {
             if (!this.askedLiterals.containsKey(lit)) {
-                this.askedLiterals.put(lit, new ArrayList<>());
+                this.getAskedLiterals().put(lit, new ArrayList<>());
             }
-            this.askedLiterals.get(lit).add(from);
+            this.getAskedLiterals().get(lit).add(from);
         });
 
         if (this.children != null) {
@@ -140,7 +146,7 @@ public class Program implements Runnable {
     private void processNotifyParticipationRequest(Object message) {
         String senderLabel = ((NotifyParticipationRequestMessage) message).getSenderLabel();
 
-        participatedPrograms.add(senderLabel);
+        getParticipatedPrograms().add(senderLabel);
         getRouter().sendMessage(senderLabel, new NotifyParticipationResponseMessage(this.label));
     }
 
@@ -150,8 +156,9 @@ public class Program implements Runnable {
     }
 
     private void processDependencyGraphBuilt() {
-        activate();
-        participatedPrograms.forEach(name -> getRouter().sendMessage(name, new ActivationMessage(this.label)));
+//        activate();
+//        getParticipatedPrograms().forEach(name -> getRouter().sendMessage(name, new ActivationMessage(this.label)));
+        getRouter().broadcastMessage(new StopMessage());
     }
 
     private void processInit() {
@@ -161,7 +168,7 @@ public class Program implements Runnable {
     }
 
     private void activate() {
-        System.out.println("Program#" + label + " is asked to share these literals: " + askedLiterals);
+        System.out.println("Program#" + label + " is asked to share these literals: " + getAskedLiterals());
     }
 
     private void checkChildrenResponses() {
@@ -247,5 +254,40 @@ public class Program implements Runnable {
      */
     public BlockingQueue<Object> getMessages() {
         return messages;
+    }
+
+    /**
+     * @return the participatedPrograms
+     */
+    public Set<String> getParticipatedPrograms() {
+        return participatedPrograms;
+    }
+
+    /**
+     * @return the askedLiterals
+     */
+    public Map<Literal, List<String>> getAskedLiterals() {
+        return askedLiterals;
+    }
+
+    /**
+     * @return the smallestModel
+     */
+    public Set<Literal> getSmallestModel() {
+        return smallestModel;
+    }
+
+    /**
+     * @return the running
+     */
+    public boolean isRunning() {
+        return running;
+    }
+
+    /**
+     * @param running the running to set
+     */
+    public void setRunning(boolean running) {
+        this.running = running;
     }
 }

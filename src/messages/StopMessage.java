@@ -9,10 +9,10 @@ package messages;
  *
  * @author martin
  */
-public class InitMessage {
-
-    @Override
-    public String toString() {
-        return "InitMessage";
+public class StopMessage {
+    
+     @Override
+     public String toString() {
+        return "StopMessage";
     }
 }

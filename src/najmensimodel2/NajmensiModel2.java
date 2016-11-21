@@ -15,6 +15,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -76,7 +77,7 @@ public class NajmensiModel2 {
     public static void main(String[] args) {
         ArrayList<Program> programs = readRulesFromFile();
         ExecutorService executor = Executors.newCachedThreadPool();
-        
+
         programs.stream().forEach((Program p) -> {
             p.setRouter(router);
             router.addProgram(p);
@@ -85,6 +86,12 @@ public class NajmensiModel2 {
 
         router.sendMessage(programs.get(0).getLabel(), new InitMessage());
         executor.shutdown();
+
+        try {
+            executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        } catch (InterruptedException e) {
+            System.out.println("najmensimodel2.NajmensiModel2.main() all threads finished.");
+        }
     }
 
 }

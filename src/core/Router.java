@@ -29,6 +29,11 @@ public class Router {
 
         getPrograms().get(programName).receiveMessage(message);
     }
+    
+    public void broadcastMessage(Object message) {
+        System.out.println("Broadcasting: `" + message + "`");
+        getPrograms().values().forEach(program -> program.receiveMessage(message));
+    }
 
     /**
      * @return the programs
