@@ -9,19 +9,15 @@ import core.Literal;
 import core.Program;
 import core.Router;
 import core.Rule;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import messages.InitMessage;
-import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -30,21 +26,17 @@ import org.junit.Test;
  */
 public class DependencyGraphBuildTest {
 
-    static Router router;
-    static Program p1;
-    static Program p2;
-    static Program p3;
+    @Test
+    public void testAskedProgram1() {
+        System.out.println("DependencyGraphBuildTest.testAskedProgram1()");
+        System.out.println("#1\n1:a :- 2:b\n#2\n2:b :- 3:c\n#3\n3:c :-");        
+        System.out.println("--------------------------------------------");
 
-    public DependencyGraphBuildTest() {
-    }
+        Router router = new Router();
 
-    @BeforeClass
-    public static void setUpClass() throws InterruptedException {
-        router = new Router();
-
-        p1 = new Program("1", router);
-        p2 = new Program("2", router);
-        p3 = new Program("3", router);
+        Program p1 = new Program("1", router);
+        Program p2 = new Program("2", router);
+        Program p3 = new Program("3", router);
 
         router.addProgram(p1);
         router.addProgram(p2);
@@ -75,45 +67,164 @@ public class DependencyGraphBuildTest {
         router.sendMessage(p1.getLabel(), new InitMessage());
         executor.shutdown();
 
+        Map<Literal, Set<String>> p2asked = new HashMap<>();
+        p2asked.put(new Constant("2:b"), new HashSet<>());
+        p2asked.get(new Constant("2:b")).add("1");
+
+        Map<Literal, Set<String>> p3asked = new HashMap<>();
+        p3asked.put(new Constant("3:c"), new HashSet<>());
+        p3asked.get(new Constant("3:c")).add("2");
+
         try {
             executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
         } catch (InterruptedException e) {
-            
         }
-    }
 
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
-
-    @Test
-    public void testAskedFromProgram1() {
         Assert.assertEquals(p1.getAskedLiterals().size(), 0);
+        Assert.assertEquals(p2.getAskedLiterals(), p2asked);
+        Assert.assertEquals(p3.getAskedLiterals(), p3asked);
     }
 
     @Test
-    public void testAskedFromProgram2() {
-        Map<Literal, List<String>> p2asked = new HashMap<>();
-        p2asked.put(new Constant("2:b"), new ArrayList<>());
+    public void testAskedProgram2() {
+        System.out.println("DependencyGraphBuildTest.testAskedProgram2()");
+        System.out.println("#1\n1:a :- 2:b\n#2\n2:b :- 3:c\n#3\n3:c :- 1:a");        
+        System.out.println("--------------------------------------------");
+
+        Router router = new Router();
+
+        Program p1 = new Program("1", router);
+        Program p2 = new Program("2", router);
+        Program p3 = new Program("3", router);
+
+        router.addProgram(p1);
+        router.addProgram(p2);
+        router.addProgram(p3);
+
+        Rule r1 = new Rule();
+        r1.setHead(new Constant("1:a"));
+        r1.addToBody(new Constant("2:b"));
+
+        p1.addRule(r1);
+
+        Rule r2 = new Rule();
+        r2.setHead(new Constant("2:b"));
+        r2.addToBody(new Constant("3:c"));
+
+        p2.addRule(r2);
+
+        Rule r3 = new Rule();
+        r3.setHead(new Constant("3:c"));
+        r3.addToBody(new Constant("1:a"));
+
+        p3.addRule(r3);
+
+        ExecutorService executor = Executors.newCachedThreadPool();
+        executor.execute(p1);
+        executor.execute(p2);
+        executor.execute(p3);
+
+        router.sendMessage(p1.getLabel(), new InitMessage());
+        executor.shutdown();
+
+        Map<Literal, Set<String>> p1asked = new HashMap<>();
+        p1asked.put(new Constant("1:a"), new HashSet<>());
+        p1asked.get(new Constant("1:a")).add("3");
+
+        Map<Literal, Set<String>> p2asked = new HashMap<>();
+        p2asked.put(new Constant("2:b"), new HashSet<>());
         p2asked.get(new Constant("2:b")).add("1");
 
+        Map<Literal, Set<String>> p3asked = new HashMap<>();
+        p3asked.put(new Constant("3:c"), new HashSet<>());
+        p3asked.get(new Constant("3:c")).add("2");
+
+        try {
+            executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        } catch (InterruptedException e) {
+        }
+
+        Assert.assertEquals(p1.getAskedLiterals(), p1asked);
         Assert.assertEquals(p2.getAskedLiterals(), p2asked);
+        Assert.assertEquals(p3.getAskedLiterals(), p3asked);
     }
 
     @Test
-    public void testAskedFromProgram3() {
-        Map<Literal, List<String>> p3asked = new HashMap<>();
-        p3asked.put(new Constant("3:c"), new ArrayList<>());
-        p3asked.get(new Constant("3:c")).add("2");
+    public void testAskedProgram3() {
+        System.out.println("DependencyGraphBuildTest.testAskedProgram3()");
+        System.out.println("#1\n1:a :- 2:b\n1:c :- 3:d\n#2\n2:b :- 3:d\n#3\n3:d :- 4:e\n#4\n4:e :-");        
+        System.out.println("--------------------------------------------");
 
+        Router router = new Router();
+
+        Program p1 = new Program("1", router);
+        Program p2 = new Program("2", router);
+        Program p3 = new Program("3", router);
+        Program p4 = new Program("4", router);
+
+        router.addProgram(p1);
+        router.addProgram(p2);
+        router.addProgram(p3);
+        router.addProgram(p4);
+
+        Rule r = new Rule();
+        r.setHead(new Constant("1:a"));
+        r.addToBody(new Constant("2:b"));
+
+        p1.addRule(r);
+
+        r = new Rule();
+        r.setHead(new Constant("1:c"));
+        r.addToBody(new Constant("3:d"));
+
+        p1.addRule(r);
+
+        r = new Rule();
+        r.setHead(new Constant("2:b"));
+        r.addToBody(new Constant("3:d"));
+
+        p2.addRule(r);
+
+        r = new Rule();
+        r.setHead(new Constant("3:d"));
+        r.addToBody(new Constant("4:e"));
+
+        p3.addRule(r);
+
+        r = new Rule();
+        r.setHead(new Constant("4:e"));
+        p4.addRule(r);
+
+        ExecutorService executor = Executors.newCachedThreadPool();
+        executor.execute(p1);
+        executor.execute(p2);
+        executor.execute(p3);
+        executor.execute(p4);
+
+        router.sendMessage(p1.getLabel(), new InitMessage());
+        executor.shutdown();
+
+        Map<Literal, Set<String>> p2asked = new HashMap<>();
+        p2asked.put(new Constant("2:b"), new HashSet<>());
+        p2asked.get(new Constant("2:b")).add("1");
+
+        Map<Literal, Set<String>> p3asked = new HashMap<>();
+        p3asked.put(new Constant("3:d"), new HashSet<>());
+        p3asked.get(new Constant("3:d")).add("1");
+        p3asked.get(new Constant("3:d")).add("2");
+
+        Map<Literal, Set<String>> p4asked = new HashMap<>();
+        p4asked.put(new Constant("4:e"), new HashSet<>());
+        p4asked.get(new Constant("4:e")).add("3");
+
+        try {
+            executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        } catch (InterruptedException e) {
+        }
+
+        Assert.assertEquals(0, p1.getAskedLiterals().size());
+        Assert.assertEquals(p2.getAskedLiterals(), p2asked);
         Assert.assertEquals(p3.getAskedLiterals(), p3asked);
+        Assert.assertEquals(p4.getAskedLiterals(), p4asked);
     }
 }

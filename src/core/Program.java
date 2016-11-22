@@ -44,7 +44,7 @@ public class Program implements Runnable {
     private String parent = null;
     private Map<String, Boolean> children = null;
     private final BlockingQueue<Object> messages = new LinkedBlockingQueue<>();
-    private final Map<Literal, List<String>> askedLiterals = new HashMap<>();
+    private final Map<Literal, Set<String>> askedLiterals = new HashMap<>();
     private final Set<Literal> smallestModel = new HashSet<>();
 
     public Program(String label) {
@@ -60,7 +60,7 @@ public class Program implements Runnable {
 
     @Override
     public void run() {
-        System.out.println("Run: " + this.getLabel());
+//        System.out.println("Run: " + this.getLabel());
         while (isRunning()) {
             try {
                 Object message = getMessages().take();
@@ -107,7 +107,7 @@ public class Program implements Runnable {
 
         ((GetRequestMessage) message).getLits().forEach(lit -> {
             if (!this.askedLiterals.containsKey(lit)) {
-                this.getAskedLiterals().put(lit, new ArrayList<>());
+                this.getAskedLiterals().put(lit, new HashSet<>());
             }
             this.getAskedLiterals().get(lit).add(from);
         });
@@ -168,7 +168,7 @@ public class Program implements Runnable {
     }
 
     private void activate() {
-        System.out.println("Program#" + label + " is asked to share these literals: " + getAskedLiterals());
+//        System.out.println("Program#" + label + " is asked to share these literals: " + getAskedLiterals());
     }
 
     private void checkChildrenResponses() {
@@ -266,7 +266,7 @@ public class Program implements Runnable {
     /**
      * @return the askedLiterals
      */
-    public Map<Literal, List<String>> getAskedLiterals() {
+    public Map<Literal, Set<String>> getAskedLiterals() {
         return askedLiterals;
     }
 
