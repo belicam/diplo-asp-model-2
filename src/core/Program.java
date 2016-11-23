@@ -165,6 +165,10 @@ public class Program implements Runnable {
         this.isInitialProgram = true;
         this.notifyParticipationConfirmed = true;
         checkRules(this.label);
+
+        if (children.isEmpty()) {
+            getRouter().sendMessage(this.label, new DependencyGraphBuiltMessage());
+        }
     }
 
     private void activate() {
