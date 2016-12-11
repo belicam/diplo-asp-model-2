@@ -15,17 +15,15 @@ import java.util.List;
 public class FireRequestMessage {
     private String senderLabel;
     private List<Literal> lits;
-    private Boolean isInModel;
     
-    public FireRequestMessage(String senderLabel, List<Literal> lits, Boolean isInModel) {
+    public FireRequestMessage(String senderLabel, List<Literal> lits) {
         this.senderLabel = senderLabel;
         this.lits = lits;
-        this.isInModel = isInModel;
     }
 
     @Override
     public String toString() {
-        return "FireRequestMessage: Program#" + senderLabel + " sends " + lits + " value: " + isInModel;
+        return "FireRequestMessage: Program#" + senderLabel + " sends " + lits;
     }
 
     /**
@@ -54,19 +52,5 @@ public class FireRequestMessage {
      */
     public void setLits(List<Literal> lits) {
         this.lits = lits;
-    }
-
-    /**
-     * @return the isInModel
-     */
-    public Boolean getIsInModel() {
-        return isInModel;
-    }
-
-    /**
-     * @param isInModel the isInModel to set
-     */
-    public void setIsInModel(Boolean isInModel) {
-        this.isInModel = isInModel;
     }
 }

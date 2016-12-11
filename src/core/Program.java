@@ -25,6 +25,7 @@ import messages.InitMessage;
 import messages.NotifyParticipationRequestMessage;
 import messages.NotifyParticipationResponseMessage;
 import messages.StopMessage;
+import solver.TreeSolver;
 
 /**
  *
@@ -40,12 +41,14 @@ public class Program implements Runnable {
     private List<Rule> rules = new ArrayList<>();
 
     private Router router;
+    private TreeSolver solver;
 
     private String parent = null;
     private Map<String, Boolean> children = null;
     private final BlockingQueue<Object> messages = new LinkedBlockingQueue<>();
     private final Map<Literal, Set<String>> askedLiterals = new HashMap<>();
-    private final Set<Literal> smallestModel = new HashSet<>();
+
+    private Set<Literal> smallestModel = new HashSet<>();
 
     public Program(String label) {
         this.label = label;
@@ -139,8 +142,8 @@ public class Program implements Runnable {
     }
 
     private void processActivation(Object message) {
-//        todo odvodit co sa da, pozret pytane literaly -> poslat fire 
-        activate();
+        solver = new TreeSolver((ArrayList<Rule>) rules);
+        fire();
     }
 
     private void processNotifyParticipationRequest(Object message) {
@@ -156,9 +159,8 @@ public class Program implements Runnable {
     }
 
     private void processDependencyGraphBuilt() {
-//        activate();
-//        getParticipatedPrograms().forEach(name -> getRouter().sendMessage(name, new ActivationMessage(this.label)));
-        getRouter().broadcastMessage(new StopMessage());
+        getRouter().broadcastMessage(new ActivationMessage(this.label));
+        // getRouter().broadcastMessage(new StopMessage()); // todo remove after all finished
     }
 
     private void processInit() {
@@ -171,8 +173,29 @@ public class Program implements Runnable {
         }
     }
 
-    private void activate() {
+    private void fire() {
 //        System.out.println("Program#" + label + " is asked to share these literals: " + getAskedLiterals());
+        Set<Literal> newDerived = solver.findSmallestModel(smallestModel);
+        newDerived.removeAll(smallestModel);
+        
+        if (!newDerived.isEmpty()) {
+//            todo filter already sent
+            Map<String, List<Literal>> literalsToSend = new HashMap<>();
+            newDerived.forEach(lit -> {
+                askedLiterals.get(lit).forEach(prog -> {
+                    if (!literalsToSend.containsKey(prog)) {
+                        literalsToSend.put(prog, new ArrayList<>());
+                    }
+                    literalsToSend.get(prog).add(lit);
+                });
+            });
+
+//            System.out.println(literalsToSend);   
+            for (Map.Entry<String, List<Literal>> entry : literalsToSend.entrySet()) {
+                getRouter().sendMessage(entry.getKey(), new FireRequestMessage(label, entry.getValue()));                
+            }
+            smallestModel.addAll(newDerived);
+        }
     }
 
     private void checkChildrenResponses() {

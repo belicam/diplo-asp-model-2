@@ -7,6 +7,9 @@ package core;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import solver.Cache;
+import solver.NodeLiteral;
+import solver.NodeRule;
 
 /**
  *
@@ -25,7 +28,17 @@ public class Rule {
         this.head = head;
         this.body = body;
     }
-    
+
+    public NodeRule compile(Cache cache) {
+        NodeLiteral nodeHead = cache.getCachedNodeLiteral(this.head);
+        ArrayList<NodeLiteral> nodeBody = cache.getCachedNodeLiteral(this.body);
+
+        NodeRule nr = new NodeRule(this, nodeHead);
+        nodeBody.stream().forEach(n -> n.addNodeRule(nr));
+
+        return nr;
+    }
+
     /**
      * @return the head
      */
