@@ -14,12 +14,19 @@ public class FireResponseMessage {
 //     todo
     private String senderLabel;
 
-    public FireResponseMessage() {
-
+    public FireResponseMessage(String senderLabel) {
+        this.senderLabel = senderLabel;
     }
 
     @Override
     public String toString() {
-        return "FireResponseMessage: Program#" + senderLabel + "responds to fire";
+        return "FireResponseMessage: Program#" + getSenderLabel() + "responds to fire";
+    }
+
+    /**
+     * @return the senderLabel
+     */
+    public String getSenderLabel() {
+        return senderLabel;
     }
 }

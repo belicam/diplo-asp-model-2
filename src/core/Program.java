@@ -48,7 +48,9 @@ public class Program implements Runnable {
     private final BlockingQueue<Object> messages = new LinkedBlockingQueue<>();
     private final Map<Literal, Set<String>> askedLiterals = new HashMap<>();
 
-    private Set<Literal> smallestModel = new HashSet<>();
+    private Map<String, List<Literal>> sentLiterals = new HashMap<>();
+    
+    private final Set<Literal> smallestModel = new HashSet<>();
 
     public Program(String label) {
         this.label = label;
@@ -134,7 +136,14 @@ public class Program implements Runnable {
     }
 
     private void processFireRequest(Object message) {
+        Set<Literal> obtainedLiterals = ((FireRequestMessage) message).getLits();
+        String sender = ((FireRequestMessage) message).getSenderLabel();
+        
+        smallestModel.addAll(obtainedLiterals);
+        fire();
+        
 //        todo
+        getRouter().sendMessage(sender, new FireResponseMessage(label));
     }
 
     private void processFireResponse(Object message) {
@@ -160,7 +169,7 @@ public class Program implements Runnable {
 
     private void processDependencyGraphBuilt() {
         getRouter().broadcastMessage(new ActivationMessage(this.label));
-        // getRouter().broadcastMessage(new StopMessage()); // todo remove after all finished
+        // getRouter().broadcastMessage(new StopMessage()); // stop message for dep graph testing
     }
 
     private void processInit() {
@@ -177,23 +186,23 @@ public class Program implements Runnable {
 //        System.out.println("Program#" + label + " is asked to share these literals: " + getAskedLiterals());
         Set<Literal> newDerived = solver.findSmallestModel(smallestModel);
         newDerived.removeAll(smallestModel);
-        
+
         if (!newDerived.isEmpty()) {
 //            todo filter already sent
-            Map<String, List<Literal>> literalsToSend = new HashMap<>();
+            Map<String, Set<Literal>> literalsToSend = new HashMap<>();
             newDerived.forEach(lit -> {
                 askedLiterals.get(lit).forEach(prog -> {
                     if (!literalsToSend.containsKey(prog)) {
-                        literalsToSend.put(prog, new ArrayList<>());
+                        literalsToSend.put(prog, new HashSet<>());
                     }
                     literalsToSend.get(prog).add(lit);
                 });
             });
 
-//            System.out.println(literalsToSend);   
-            for (Map.Entry<String, List<Literal>> entry : literalsToSend.entrySet()) {
-                getRouter().sendMessage(entry.getKey(), new FireRequestMessage(label, entry.getValue()));                
-            }
+//            System.out.println(literalsToSend);
+            literalsToSend.entrySet().stream().forEach((entry) -> {
+                getRouter().sendMessage(entry.getKey(), new FireRequestMessage(label, entry.getValue()));
+            });
             smallestModel.addAll(newDerived);
         }
     }

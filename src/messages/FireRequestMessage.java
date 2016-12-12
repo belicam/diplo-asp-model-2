@@ -6,7 +6,7 @@
 package messages;
 
 import core.Literal;
-import java.util.List;
+import java.util.Set;
 
 /**
  *
@@ -14,9 +14,9 @@ import java.util.List;
  */
 public class FireRequestMessage {
     private String senderLabel;
-    private List<Literal> lits;
+    private Set<Literal> lits;
     
-    public FireRequestMessage(String senderLabel, List<Literal> lits) {
+    public FireRequestMessage(String senderLabel, Set<Literal> lits) {
         this.senderLabel = senderLabel;
         this.lits = lits;
     }
@@ -43,14 +43,14 @@ public class FireRequestMessage {
     /**
      * @return the lits
      */
-    public List<Literal> getLits() {
+    public Set<Literal> getLits() {
         return lits;
     }
 
     /**
      * @param lits the lits to set
      */
-    public void setLits(List<Literal> lits) {
+    public void setLits(Set<Literal> lits) {
         this.lits = lits;
     }
 }
