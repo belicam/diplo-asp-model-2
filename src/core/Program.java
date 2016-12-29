@@ -142,7 +142,7 @@ public class Program implements Runnable {
         Set<Literal> obtainedLiterals = requestMessage.getLits();
         String sender = requestMessage.getSenderLabel();
 
-        System.out.println("core.Program.processFireRequest()#" + label + " " + obtainedLiterals);
+//        System.out.println("core.Program.processFireRequest()#" + label + " " + obtainedLiterals);
         smallestModel.addAll(obtainedLiterals);
         fire(requestMessage);
 
@@ -159,16 +159,23 @@ public class Program implements Runnable {
         fireMessages.entrySet().forEach((messagesEntry) -> {
             if (messagesEntry.getValue().contains(initialRequestMessage)) {
                 messagesEntry.getValue().remove(initialRequestMessage);
-                if ((messagesEntry.getKey() instanceof FireRequestMessage) && messagesEntry.getValue().isEmpty()) {
+//                pridana kontrola aby neposielal sebe samemu response | kvoli prvej fireRequestMessage v processActivation
+                if (messagesEntry.getValue().isEmpty() && !messagesEntry.getKey().getSenderLabel().equals(label)) {
                     getRouter().sendMessage(messagesEntry.getKey().getSenderLabel(), new FireResponseMessage(label, messagesEntry.getKey()));
                 }
             }
         });
+        
+        boolean fireMessagesResolved = fireMessages.values().stream().allMatch((requests) -> requests.isEmpty());
+        if (fireMessagesResolved && this.isInitialProgram) {
+            getRouter().broadcastMessage(new StopMessage());
+            System.out.println("Program#" + label + " ended with model: " + smallestModel);
+        }
     }
 
     private void processActivation(Object message) {
         solver = new TreeSolver((ArrayList<Rule>) rules);
-        fire((Message) message);
+        fire(new FireRequestMessage(label, new HashSet<>()));
     }
 
     private void processNotifyParticipationRequest(Object message) {
@@ -200,18 +207,20 @@ public class Program implements Runnable {
 
     private void fire(Message parentRequestMessage) {
         Set<Literal> newDerived = solver.findSmallestModel(smallestModel);
-        System.out.println("core.Program.fire()#" + label+ " " + newDerived);
         newDerived.removeAll(smallestModel);
+//        System.out.println("core.Program.fire()#" + label + " " + newDerived);
 
         if (!newDerived.isEmpty()) {
             Map<String, Set<Literal>> literalsToSend = new HashMap<>();
             newDerived.forEach(lit -> {
-                askedLiterals.get(lit).forEach(prog -> {
-                    if (!literalsToSend.containsKey(prog)) {
-                        literalsToSend.put(prog, new HashSet<>());
-                    }
-                    literalsToSend.get(prog).add(lit);
-                });
+                if (askedLiterals.containsKey(lit)) {
+                    askedLiterals.get(lit).forEach(prog -> {
+                        if (!literalsToSend.containsKey(prog)) {
+                            literalsToSend.put(prog, new HashSet<>());
+                        }
+                        literalsToSend.get(prog).add(lit);
+                    });
+                }
             });
 
             literalsToSend.entrySet().stream().forEach((entry) -> {

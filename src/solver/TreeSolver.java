@@ -19,7 +19,7 @@ public class TreeSolver {
 
     private ArrayList<Rule> rules = new ArrayList<>();
     private ArrayList<NodeRule> trees = new ArrayList<>();
-    
+
     private Cache c = new Cache();
 
     private HashSet<Literal> smallestModel = new HashSet<>();
@@ -36,20 +36,21 @@ public class TreeSolver {
         });
     }
 
-   
     public HashSet<Literal> findSmallestModel(Set<Literal> initialModel) {
-        if ((initialModel == null) || initialModel.isEmpty()) {
-            this.smallestModel.clear();            
-        } else {
-            this.smallestModel.addAll(initialModel);
-        }
+        this.smallestModel.clear();
         
-        System.out.println("solver.TreeSolver.findSmallestModel() - smallest model " + smallestModel);
+        if ((initialModel != null) && !initialModel.isEmpty()) {
+            initialModel.stream().forEach((Literal l) -> {
+                Rule temprule = new Rule(l, new ArrayList<>());
+                trees.add(temprule.compile(c));
+            });
+        }
+
         this.trees.stream().forEach(r -> r.fire(null, this.smallestModel));
 
         return this.smallestModel;
     }
-    
+
     /**
      * @return rules
      */
