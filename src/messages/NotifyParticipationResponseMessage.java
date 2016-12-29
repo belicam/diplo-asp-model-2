@@ -9,29 +9,13 @@ package messages;
  *
  * @author martin
  */
-public class NotifyParticipationResponseMessage {
-    private String senderLabel;
-    
+public class NotifyParticipationResponseMessage extends Message {
     public NotifyParticipationResponseMessage(String senderLabel) {
-        this.senderLabel = senderLabel;
+        super(senderLabel);
     }
     
     @Override
     public String toString() {
         return "NotifyParticipationResponseMessage: participation confirmed";
-    }
-
-    /**
-     * @return the senderLabel
-     */
-    public String getSenderLabel() {
-        return senderLabel;
-    }
-
-    /**
-     * @param senderLabel the senderLabel to set
-     */
-    public void setSenderLabel(String senderLabel) {
-        this.senderLabel = senderLabel;
     }
 }

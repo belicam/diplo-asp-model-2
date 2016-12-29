@@ -9,30 +9,14 @@ package messages;
  *
  * @author martin
  */
-public class GetResponseMessage {
-    private String senderLabel;
+public class GetResponseMessage extends Message {
     
     public GetResponseMessage(String senderLabel) {
-        this.senderLabel = senderLabel;
+        super(senderLabel);
     }
     
     @Override
     public String toString() {
         return "GetResponseMessage: Program#" + getSenderLabel() + " responds to get";
     }
-
-    /**
-     * @return the senderLabel
-     */
-    public String getSenderLabel() {
-        return senderLabel;
-    }
-
-    /**
-     * @param senderLabel the senderLabel to set
-     */
-    public void setSenderLabel(String senderLabel) {
-        this.senderLabel = senderLabel;
-    }
-
 }

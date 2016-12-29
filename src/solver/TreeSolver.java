@@ -44,6 +44,7 @@ public class TreeSolver {
             this.smallestModel.addAll(initialModel);
         }
         
+        System.out.println("solver.TreeSolver.findSmallestModel() - smallest model " + smallestModel);
         this.trees.stream().forEach(r -> r.fire(null, this.smallestModel));
 
         return this.smallestModel;

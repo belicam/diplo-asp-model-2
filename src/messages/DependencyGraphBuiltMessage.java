@@ -9,7 +9,11 @@ package messages;
  *
  * @author martin
  */
-public class DependencyGraphBuiltMessage {
+public class DependencyGraphBuiltMessage extends Message {
+
+    public DependencyGraphBuiltMessage() {
+        super(null);
+    }
 
     @Override
     public String toString() {

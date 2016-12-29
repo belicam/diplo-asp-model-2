@@ -9,24 +9,51 @@ package messages;
  *
  * @author martin
  */
-public class FireResponseMessage {
+public class FireResponseMessage extends Message {
 
-//     todo
-    private String senderLabel;
+    private Message requestMessage;
 
-    public FireResponseMessage(String senderLabel) {
-        this.senderLabel = senderLabel;
+    public FireResponseMessage(String senderLabel, Message requestMessage) {
+        super(senderLabel);
+        this.requestMessage = requestMessage;
     }
 
     @Override
     public String toString() {
-        return "FireResponseMessage: Program#" + getSenderLabel() + "responds to fire";
+        return "FireResponseMessage: Program#" + getSenderLabel() + " responds to fire";
     }
 
     /**
-     * @return the senderLabel
+     * @return the requestMessage
      */
-    public String getSenderLabel() {
-        return senderLabel;
+    public Message getRequestMessage() {
+        return requestMessage;
     }
+
+    /**
+     * @param requestMessage the requestMessage to set
+     */
+    public void setRequestMessage(Message requestMessage) {
+        this.requestMessage = requestMessage;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+
+        if (!(obj instanceof FireResponseMessage)) {
+            return false;
+        }
+
+        FireResponseMessage msg = (FireResponseMessage) obj;
+        return msg.getSenderLabel().equals(getSenderLabel()) && msg.getRequestMessage().equals(getRequestMessage());
+    }
+
+    @Override
+    public int hashCode() {
+        return (getSenderLabel() + getRequestMessage().toString()).hashCode();
+    }
+
 }

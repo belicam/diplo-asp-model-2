@@ -9,7 +9,11 @@ package messages;
  *
  * @author martin
  */
-public class StopMessage {
+public class StopMessage extends Message {
+
+    public StopMessage() {
+        super(null);
+    }
     
      @Override
      public String toString() {

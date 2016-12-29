@@ -9,29 +9,13 @@ package messages;
  *
  * @author martin
  */
-public class NotifyParticipationRequestMessage {
-    private String senderLabel;
-    
+public class NotifyParticipationRequestMessage extends Message {
     public NotifyParticipationRequestMessage(String senderLabel) {
-        this.senderLabel = senderLabel;
+        super(senderLabel);
     }
     
     @Override
     public String toString() {
-        return "NotifyParticipationRequestMessage: Program#" + senderLabel + " is participating.";
-    }
-
-    /**
-     * @return the senderLabel
-     */
-    public String getSenderLabel() {
-        return senderLabel;
-    }
-
-    /**
-     * @param senderLabel the senderLabel to set
-     */
-    public void setSenderLabel(String senderLabel) {
-        this.senderLabel = senderLabel;
+        return "NotifyParticipationRequestMessage: Program#" + getSenderLabel() + " is participating.";
     }
 }

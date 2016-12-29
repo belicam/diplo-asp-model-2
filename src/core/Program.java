@@ -22,6 +22,7 @@ import messages.FireResponseMessage;
 import messages.GetRequestMessage;
 import messages.GetResponseMessage;
 import messages.InitMessage;
+import messages.Message;
 import messages.NotifyParticipationRequestMessage;
 import messages.NotifyParticipationResponseMessage;
 import messages.StopMessage;
@@ -40,17 +41,18 @@ public class Program implements Runnable {
     private String label;
     private List<Rule> rules = new ArrayList<>();
 
+    private final Set<Literal> smallestModel = new HashSet<>();
+
     private Router router;
     private TreeSolver solver;
 
     private String parent = null;
     private Map<String, Boolean> children = null;
     private final BlockingQueue<Object> messages = new LinkedBlockingQueue<>();
+
     private final Map<Literal, Set<String>> askedLiterals = new HashMap<>();
 
-    private Map<String, List<Literal>> sentLiterals = new HashMap<>();
-    
-    private final Set<Literal> smallestModel = new HashSet<>();
+    private Map<Message, List<Message>> fireMessages = new HashMap<>();
 
     public Program(String label) {
         this.label = label;
@@ -136,23 +138,37 @@ public class Program implements Runnable {
     }
 
     private void processFireRequest(Object message) {
-        Set<Literal> obtainedLiterals = ((FireRequestMessage) message).getLits();
-        String sender = ((FireRequestMessage) message).getSenderLabel();
-        
+        FireRequestMessage requestMessage = (FireRequestMessage) message;
+        Set<Literal> obtainedLiterals = requestMessage.getLits();
+        String sender = requestMessage.getSenderLabel();
+
+        System.out.println("core.Program.processFireRequest()#" + label + " " + obtainedLiterals);
         smallestModel.addAll(obtainedLiterals);
-        fire();
-        
-//        todo
-        getRouter().sendMessage(sender, new FireResponseMessage(label));
+        fire(requestMessage);
+
+        if (!fireMessages.containsKey(requestMessage) || fireMessages.get(requestMessage).isEmpty()) {
+            getRouter().sendMessage(sender, new FireResponseMessage(label, requestMessage));
+        }
     }
 
     private void processFireResponse(Object message) {
-//        todo
+        FireResponseMessage responseMessage = (FireResponseMessage) message;
+        FireRequestMessage initialRequestMessage = (FireRequestMessage) responseMessage.getRequestMessage();
+
+//        vymazem v mape request message, na ktoru prisla odpoved | poslem response ak po vymazani je prazdne pole
+        fireMessages.entrySet().forEach((messagesEntry) -> {
+            if (messagesEntry.getValue().contains(initialRequestMessage)) {
+                messagesEntry.getValue().remove(initialRequestMessage);
+                if ((messagesEntry.getKey() instanceof FireRequestMessage) && messagesEntry.getValue().isEmpty()) {
+                    getRouter().sendMessage(messagesEntry.getKey().getSenderLabel(), new FireResponseMessage(label, messagesEntry.getKey()));
+                }
+            }
+        });
     }
 
     private void processActivation(Object message) {
         solver = new TreeSolver((ArrayList<Rule>) rules);
-        fire();
+        fire((Message) message);
     }
 
     private void processNotifyParticipationRequest(Object message) {
@@ -182,13 +198,12 @@ public class Program implements Runnable {
         }
     }
 
-    private void fire() {
-//        System.out.println("Program#" + label + " is asked to share these literals: " + getAskedLiterals());
+    private void fire(Message parentRequestMessage) {
         Set<Literal> newDerived = solver.findSmallestModel(smallestModel);
+        System.out.println("core.Program.fire()#" + label+ " " + newDerived);
         newDerived.removeAll(smallestModel);
 
         if (!newDerived.isEmpty()) {
-//            todo filter already sent
             Map<String, Set<Literal>> literalsToSend = new HashMap<>();
             newDerived.forEach(lit -> {
                 askedLiterals.get(lit).forEach(prog -> {
@@ -199,9 +214,20 @@ public class Program implements Runnable {
                 });
             });
 
-//            System.out.println(literalsToSend);
             literalsToSend.entrySet().stream().forEach((entry) -> {
-                getRouter().sendMessage(entry.getKey(), new FireRequestMessage(label, entry.getValue()));
+                Message newRequestMessage = new FireRequestMessage(label, entry.getValue());
+                if (parentRequestMessage == null) {
+                    getRouter().sendMessage(entry.getKey(), newRequestMessage);
+                } else if (fireMessages.containsKey(parentRequestMessage)) {
+                    if (!fireMessages.get(parentRequestMessage).contains(newRequestMessage)) {
+                        fireMessages.get(parentRequestMessage).add(newRequestMessage);
+                        getRouter().sendMessage(entry.getKey(), newRequestMessage);
+                    }
+                } else {
+                    fireMessages.put(parentRequestMessage, new ArrayList<>());
+                    fireMessages.get(parentRequestMessage).add(newRequestMessage);
+                    getRouter().sendMessage(entry.getKey(), newRequestMessage);
+                }
             });
             smallestModel.addAll(newDerived);
         }

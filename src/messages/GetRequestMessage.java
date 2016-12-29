@@ -12,13 +12,12 @@ import java.util.List;
  *
  * @author martin
  */
-public class GetRequestMessage {
-    private String senderLabel;
+public class GetRequestMessage extends Message {
     private String initialSender;
     private List<Literal> lits;
     
     public GetRequestMessage(String senderLabel, String initialSender, List<Literal> lits) {
-        this.senderLabel = senderLabel;
+        super(senderLabel);
         this.initialSender = initialSender;
         this.lits = lits;
     }
@@ -26,20 +25,6 @@ public class GetRequestMessage {
     @Override
     public String toString() {
         return "GetRequestMessage: Program#" + getSenderLabel() + " asks for " + getLits();
-    }
-
-    /**
-     * @return the senderLabel
-     */
-    public String getSenderLabel() {
-        return senderLabel;
-    }
-
-    /**
-     * @param senderLabel the senderLabel to set
-     */
-    public void setSenderLabel(String senderLabel) {
-        this.senderLabel = senderLabel;
     }
 
     /**

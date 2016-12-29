@@ -12,32 +12,17 @@ import java.util.Set;
  *
  * @author martin
  */
-public class FireRequestMessage {
-    private String senderLabel;
+public class FireRequestMessage extends Message {
     private Set<Literal> lits;
     
     public FireRequestMessage(String senderLabel, Set<Literal> lits) {
-        this.senderLabel = senderLabel;
+        super(senderLabel);
         this.lits = lits;
     }
 
     @Override
     public String toString() {
-        return "FireRequestMessage: Program#" + senderLabel + " sends " + lits;
-    }
-
-    /**
-     * @return the senderLabel
-     */
-    public String getSenderLabel() {
-        return senderLabel;
-    }
-
-    /**
-     * @param senderLabel the senderLabel to set
-     */
-    public void setSenderLabel(String senderLabel) {
-        this.senderLabel = senderLabel;
+        return "FireRequestMessage: Program#" + getSenderLabel() + " sends " + getLits();
     }
 
     /**
@@ -52,5 +37,24 @@ public class FireRequestMessage {
      */
     public void setLits(Set<Literal> lits) {
         this.lits = lits;
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        
+        if (!(obj instanceof FireRequestMessage)) {
+            return false;
+        }
+        
+        FireRequestMessage msg = (FireRequestMessage) obj;
+        return msg.getSenderLabel().equals(getSenderLabel()) && msg.getLits().equals(getLits());
+    }
+    
+    @Override
+    public int hashCode() {
+        return (getSenderLabel() + getLits().toString()).hashCode();
     }
 }

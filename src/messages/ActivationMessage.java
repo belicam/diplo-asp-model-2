@@ -9,29 +9,14 @@ package messages;
  *
  * @author martin
  */
-public class ActivationMessage {
-    private String senderLabel;
+public class ActivationMessage extends Message {
 
     public ActivationMessage(String senderLabel) {
-        this.senderLabel = senderLabel;
-    }
-    
-    @Override
-    public String toString() {
-        return "ActivationMessage sent from Program#" + senderLabel + ".";
-    }
-    
-    /**
-     * @return the senderLabel
-     */
-    public String getSenderLabel() {
-        return senderLabel;
+        super(senderLabel);
     }
 
-    /**
-     * @param senderLabel the senderLabel to set
-     */
-    public void setSenderLabel(String senderLabel) {
-        this.senderLabel = senderLabel;
+    @Override
+    public String toString() {
+        return "ActivationMessage sent from Program#" + getSenderLabel() + ".";
     }
 }
