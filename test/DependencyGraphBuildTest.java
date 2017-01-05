@@ -28,6 +28,7 @@ public class DependencyGraphBuildTest {
 
     @Test
     public void testAskedProgram1() {
+        System.out.println("--------------------------------------------");
         System.out.println("DependencyGraphBuildTest.testAskedProgram1()");
         System.out.println("#1\n1:a :- 2:b\n#2\n2:b :- 3:c\n#3\n3:c :-");
         System.out.println("initprogram: 1");
@@ -88,6 +89,7 @@ public class DependencyGraphBuildTest {
 
     @Test
     public void testAskedProgram2() {
+        System.out.println("--------------------------------------------");
         System.out.println("DependencyGraphBuildTest.testAskedProgram2()");
         System.out.println("#1\n1:a :- 2:b\n#2\n2:b :- 3:c\n#3\n3:c :- 1:a");
         System.out.println("initprogram: 1");
@@ -153,6 +155,7 @@ public class DependencyGraphBuildTest {
 
     @Test
     public void testAskedProgram3() {
+        System.out.println("--------------------------------------------");
         System.out.println("DependencyGraphBuildTest.testAskedProgram3()");
         System.out.println("#1\n1:a :- 2:b\n1:c :- 3:d\n#2\n2:b :- 3:d\n#3\n3:d :- 4:e\n#4\n4:e :-");
         System.out.println("initprogram: 1");
@@ -233,6 +236,7 @@ public class DependencyGraphBuildTest {
 
     @Test
     public void testAskedProgram4() {
+        System.out.println("--------------------------------------------");
         System.out.println("DependencyGraphBuildTest.testAskedProgram4()");
         System.out.println("#1\n1:a :- 2:b\n1:c :- 3:d\n#2\n2:b :- 3:d\n#3\n3:d :- 4:e\n#4\n4:e :-");
         System.out.println("initprogram: 3");
@@ -304,6 +308,7 @@ public class DependencyGraphBuildTest {
 
     @Test
     public void testAskedProgram5() {
+        System.out.println("--------------------------------------------");
         System.out.println("DependencyGraphBuildTest.testAskedProgram5()");
         System.out.println("#1\n1:a :- 2:b\n#2\n2:b :- 3:c, 1:a\n#3\n3:c :- 2:b");
         System.out.println("initprogram: 1");
@@ -372,6 +377,7 @@ public class DependencyGraphBuildTest {
 
     @Test
     public void testAskedProgram6() {
+        System.out.println("--------------------------------------------");
         System.out.println("DependencyGraphBuildTest.testAskedProgram6()");
         System.out.println("#1\n1:a :- 2:b\n#2\n2:b :- 3:c, 1:a\n#3\n3:c :- 2:b");
         System.out.println("initprogram: 2");
@@ -440,6 +446,7 @@ public class DependencyGraphBuildTest {
 
     @Test
     public void testAskedProgram7() {
+        System.out.println("--------------------------------------------");
         System.out.println("DependencyGraphBuildTest.testAskedProgram7()");
         System.out.println("#1\n1:a :- 2:b, 3:c\n#2\n2:b :- 1:a, 3:c\n#3\n3:c :- 1:a, 2:b");
         System.out.println("initprogram: 1");
@@ -512,6 +519,7 @@ public class DependencyGraphBuildTest {
 
     @Test
     public void testAskedProgram8() {
+        System.out.println("--------------------------------------------");
         System.out.println("DependencyGraphBuildTest.testAskedProgram8()");
         System.out.println("#1\n1:a :- 1:b\n1:b :-\n#2\n2:b :- 3:c\n#3\n3:c :- ");
         System.out.println("initprogram: 1");
@@ -570,6 +578,7 @@ public class DependencyGraphBuildTest {
 
     @Test
     public void testAskedProgram9() {
+        System.out.println("--------------------------------------------");
         System.out.println("DependencyGraphBuildTest.testAskedProgram9()");
         System.out.println("#1\n1:a :- 1:b\n1:b :-\n#2\n2:b :- 3:c\n#3\n3:c :- ");
         System.out.println("initprogram: 2");
@@ -632,6 +641,7 @@ public class DependencyGraphBuildTest {
 
     @Test
     public void testAskedProgram10() {
+        System.out.println("--------------------------------------------");
         System.out.println("DependencyGraphBuildTest.testAskedProgram10()");
         System.out.println("#1\n1:a :- 1:b\n1:b :- 2:a\n#2\n2:a :- \n#3\n3:c :- 4:d\n#4\n4:d :- ");
         System.out.println("initprogram: 1");

@@ -145,10 +145,10 @@ public class Program implements Runnable {
 //        System.out.println("core.Program.processFireRequest()#" + label + " " + obtainedLiterals);
         smallestModel.addAll(obtainedLiterals);
         fire(requestMessage);
-
+        
         if (!fireMessages.containsKey(requestMessage) || fireMessages.get(requestMessage).isEmpty()) {
             getRouter().sendMessage(sender, new FireResponseMessage(label, requestMessage));
-        }
+        }        
     }
 
     private void processFireResponse(Object message) {
@@ -166,11 +166,7 @@ public class Program implements Runnable {
             }
         });
         
-        boolean fireMessagesResolved = fireMessages.values().stream().allMatch((requests) -> requests.isEmpty());
-        if (fireMessagesResolved && this.isInitialProgram) {
-            getRouter().broadcastMessage(new StopMessage());
-            System.out.println("Program#" + label + " ended with model: " + smallestModel);
-        }
+        checkFireMessagesResolved();
     }
 
     private void processActivation(Object message) {
@@ -239,6 +235,14 @@ public class Program implements Runnable {
                 }
             });
             smallestModel.addAll(newDerived);
+        }
+    }
+    
+    private void checkFireMessagesResolved() {
+        boolean fireMessagesResolved = fireMessages.values().stream().allMatch((requests) -> requests.isEmpty());
+        if (fireMessagesResolved && this.isInitialProgram) {
+            getRouter().broadcastMessage(new StopMessage());
+            System.out.println("Program#" + label + " ended with model: " + smallestModel);
         }
     }
 
