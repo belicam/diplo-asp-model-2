@@ -7,6 +7,7 @@ package core;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  *
@@ -32,6 +33,11 @@ public class Router {
     public void broadcastMessage(Object message) {
         System.out.println("Broadcasting: `" + message + "`");
         getPrograms().values().forEach(program -> program.receiveMessage(message));
+    }
+    
+    public void sendMessage(Set<String> programs, Object message) {
+        System.out.println("`" + message + "` sent to programs: " + programs);
+        programs.forEach(programName -> getPrograms().get(programName).receiveMessage(message));        
     }
 
     /**

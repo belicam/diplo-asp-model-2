@@ -33,7 +33,7 @@ public class NajmensiModel2 {
         ArrayList<Program> programs;
         programs = new ArrayList<>();
 
-        try (Stream<String> stream = Files.lines(Paths.get("rules.txt"))) {
+        try (Stream<String> stream = Files.lines(Paths.get("rules1.txt"))) {
             stream.forEach((String line) -> {
                 line = line.trim().replaceAll(" ", "");
                 if (!line.isEmpty()) {
