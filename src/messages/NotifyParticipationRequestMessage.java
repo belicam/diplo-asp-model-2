@@ -10,8 +10,8 @@ package messages;
  * @author martin
  */
 public class NotifyParticipationRequestMessage extends Message {
-    public NotifyParticipationRequestMessage(String senderLabel) {
-        super(senderLabel);
+    public NotifyParticipationRequestMessage(int id, String senderLabel) {
+        super(id, senderLabel);
     }
     
     @Override

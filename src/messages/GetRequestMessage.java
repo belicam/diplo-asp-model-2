@@ -16,8 +16,8 @@ public class GetRequestMessage extends Message {
     private String initialSender;
     private List<Literal> lits;
     
-    public GetRequestMessage(String senderLabel, String initialSender, List<Literal> lits) {
-        super(senderLabel);
+    public GetRequestMessage(int id, String senderLabel, String initialSender, List<Literal> lits) {
+        super(id, senderLabel);
         this.initialSender = initialSender;
         this.lits = lits;
     }

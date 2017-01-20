@@ -11,9 +11,11 @@ package messages;
  */
 public abstract class Message {
     private String senderLabel;
+    private int id;
     
-    public Message(String senderLabel) {
+    public Message(int id, String senderLabel) {
         this.senderLabel = senderLabel;
+        this.id = id;
     }
 
     /**
@@ -30,4 +32,37 @@ public abstract class Message {
         this.senderLabel = senderLabel;
     }
 
+    /**
+     * @return the id
+     */
+    public int getId() {
+        return id;
+    }
+
+    /**
+     * @param id the id to set
+     */
+    public void setId(int id) {
+        this.id = id;
+    }
+
+        
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        
+        if (!(obj instanceof Message) || !(obj.getClass().equals(this.getClass()))) {
+            return false;
+        }
+        
+        Message msg = (Message) obj;
+        return msg.getSenderLabel().equals(getSenderLabel()) && (msg.getId() == getId());
+    }
+    
+    @Override
+    public int hashCode() {
+        return (getSenderLabel() + "#" + getId()).hashCode();
+    }
 }

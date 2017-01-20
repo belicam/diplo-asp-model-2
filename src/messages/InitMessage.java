@@ -12,7 +12,7 @@ package messages;
 public class InitMessage extends Message{
 
     public InitMessage() {
-        super(null);
+        super(-1, null);
     }
 
     @Override

@@ -12,7 +12,7 @@ package messages;
 public class DependencyGraphBuiltMessage extends Message {
 
     public DependencyGraphBuiltMessage() {
-        super(null);
+        super(-1, null);
     }
 
     @Override

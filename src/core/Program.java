@@ -35,28 +35,28 @@ import solver.TreeSolver;
  */
 public class Program implements Runnable {
 
-    private String initialProgramLabel = null;
-
-    private boolean notifyParticipationConfirmed = false;
     private boolean running;
+    private String initialProgramLabel = null;
+    private int idCounter = 0;
+
     private final Set<String> participatedPrograms = new HashSet<>();
     private String label;
     private List<Rule> rules = new ArrayList<>();
 
+    private final BlockingQueue<Object> messages = new LinkedBlockingQueue<>();
     private final Set<Literal> smallestModel = new HashSet<>();
 
     private Router router;
     private TreeSolver solver;
+    private final ActiveMessagesStore activeMessages = new ActiveMessagesStore();
 
     private String parent = null;
     private Map<String, Boolean> children = null;
-    private final BlockingQueue<Object> messages = new LinkedBlockingQueue<>();
+    private boolean notifyParticipationConfirmed = false;
 
     private final Map<Literal, Set<String>> askedLiterals = new HashMap<>();
-
-    private final ActiveMessagesStore activeMessages = new ActiveMessagesStore();
-
-    private Map<String, Boolean> participatedFiringEnded = new HashMap<>();
+    
+    private final Map<String, Boolean> participatedFiringEnded = new HashMap<>();
 
     public Program(String label) {
         this.label = label;
@@ -71,7 +71,6 @@ public class Program implements Runnable {
 
     @Override
     public void run() {
-//        System.out.println("Run: " + this.getLabel());
         while (isRunning()) {
             try {
                 Object message = getMessages().take();
@@ -126,11 +125,11 @@ public class Program implements Runnable {
         });
 
         if (this.children != null) {
-            getRouter().sendMessage(from, new GetResponseMessage(this.label));
+            getRouter().sendMessage(from, new GetResponseMessage(idCounter++, this.label));
         } else {
             this.parent = from;
             checkRules(initialProgramLabel);
-            getRouter().sendMessage(initialProgramLabel, new NotifyParticipationRequestMessage(this.label));
+            getRouter().sendMessage(initialProgramLabel, new NotifyParticipationRequestMessage(idCounter++, this.label));
         }
     }
 
@@ -153,7 +152,7 @@ public class Program implements Runnable {
 
         // ziadne nove message z tejto `requestMessage` nevznikli, tak rovno odpovedam 
         if (activeMessages.messageHasNoChildren(requestMessage)) {
-            getRouter().sendMessage(sender, new FireResponseMessage(label, requestMessage));
+            getRouter().sendMessage(sender, new FireResponseMessage(idCounter++, label, requestMessage));
         }
     }
 
@@ -167,11 +166,9 @@ public class Program implements Runnable {
             getRouter().sendMessage(initialProgramLabel, new FiringEndedMessage(label));
         } else {
 //        vymazem v mape request message, na ktoru prisla odpoved | poslem response ak po vymazani je prazdne pole
-            System.out.println("core.Program.processFireResponse()#" + label + ": " + activeMessages.getActiveMessages());
             activeMessages.resolveChildMessage(senderLabel, initialRequestMessage).entrySet().forEach(resolved -> {
-                getRouter().sendMessage(resolved.getKey(), new FireResponseMessage(label, resolved.getValue()));
+                getRouter().sendMessage(resolved.getKey(), new FireResponseMessage(idCounter++, label, resolved.getValue()));
             });
-            System.out.println("core.Program.processFireResponse()#" + label + ": " + activeMessages.getActiveMessages());
         }
     }
 
@@ -184,14 +181,14 @@ public class Program implements Runnable {
             participatedPrograms.forEach((program) -> participatedFiringEnded.put(program, Boolean.FALSE));
         }
 
-        getRouter().sendMessage(label, new FireRequestMessage(label, new HashSet<>()));
+        getRouter().sendMessage(label, new FireRequestMessage(idCounter++, label, new HashSet<>()));
     }
 
     private void processNotifyParticipationRequest(Object message) {
         String senderLabel = ((NotifyParticipationRequestMessage) message).getSenderLabel();
 
         getParticipatedPrograms().add(senderLabel);
-        getRouter().sendMessage(senderLabel, new NotifyParticipationResponseMessage(this.label));
+        getRouter().sendMessage(senderLabel, new NotifyParticipationResponseMessage(idCounter++, this.label));
     }
 
     private void processNotifyParticipationResponse(Object message) {
@@ -203,24 +200,23 @@ public class Program implements Runnable {
         String sender = ((FiringEndedMessage) message).getSenderLabel();
         if (!participatedFiringEnded.get(sender)) {
             participatedFiringEnded.put(sender, Boolean.TRUE);
-            System.out.println("core.Program.processFiringEnded()" + participatedFiringEnded);
 
             // test  ci skoncili vsetci
             if (!participatedFiringEnded.containsValue(Boolean.FALSE)) {
                 getRouter().broadcastMessage(new StopMessage());
-                System.out.println("Program#" + label + " ended with model: " + smallestModel);
+                System.out.println("Program#" + label + " ended with model: " + smallestModel + ", messagesSent: " + idCounter);
             }
         }
     }
 
     private void processDependencyGraphBuilt() {
-        getRouter().sendMessage(participatedPrograms, new ActivationMessage(this.label));
+        getRouter().sendMessage(participatedPrograms, new ActivationMessage(idCounter++, this.label));
     }
 
     private void processInit() {
         this.initialProgramLabel = label;
 
-        getRouter().sendMessage(label, new NotifyParticipationRequestMessage(label));
+        getRouter().sendMessage(label, new NotifyParticipationRequestMessage(idCounter++, label));
 
         checkRules(this.label);
 
@@ -249,7 +245,7 @@ public class Program implements Runnable {
             });
 
             literalsToSend.entrySet().stream().forEach((entry) -> {
-                Message childMessage = new FireRequestMessage(label, entry.getValue());
+                Message childMessage = new FireRequestMessage(idCounter++, label, entry.getValue());
                 activeMessages.addChildMessage(parentRequestMessage, entry.getKey(), childMessage);
                 getRouter().sendMessage(entry.getKey(), childMessage);
             });
@@ -261,7 +257,7 @@ public class Program implements Runnable {
     private void checkChildrenResponses() {
         if (!children.containsValue(Boolean.FALSE) && this.notifyParticipationConfirmed) {
             if (!this.isInitialProgram()) {
-                getRouter().sendMessage(this.parent, new GetResponseMessage(this.label));
+                getRouter().sendMessage(this.parent, new GetResponseMessage(idCounter++, this.label));
             } else {
                 getRouter().sendMessage(this.label, new DependencyGraphBuiltMessage());
             }
@@ -285,7 +281,7 @@ public class Program implements Runnable {
 
         children = new HashMap<>();
         externals.keySet().forEach(key -> {
-            getRouter().sendMessage(key, new GetRequestMessage(label, initialSender, externals.get(key)));
+            getRouter().sendMessage(key, new GetRequestMessage(idCounter++, label, initialSender, externals.get(key)));
             children.put(key, Boolean.FALSE);
         });
     }

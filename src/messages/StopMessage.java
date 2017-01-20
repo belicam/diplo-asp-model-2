@@ -12,7 +12,7 @@ package messages;
 public class StopMessage extends Message {
 
     public StopMessage() {
-        super(null);
+        super(-1, null);
     }
     
      @Override

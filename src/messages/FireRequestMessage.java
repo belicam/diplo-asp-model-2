@@ -15,8 +15,8 @@ import java.util.Set;
 public class FireRequestMessage extends Message {
     private Set<Literal> lits;
     
-    public FireRequestMessage(String senderLabel, Set<Literal> lits) {
-        super(senderLabel);
+    public FireRequestMessage(int id, String senderLabel, Set<Literal> lits) {
+        super(id, senderLabel);
         this.lits = lits;
     }
 
@@ -37,24 +37,5 @@ public class FireRequestMessage extends Message {
      */
     public void setLits(Set<Literal> lits) {
         this.lits = lits;
-    }
-    
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        
-        if (!(obj instanceof FireRequestMessage)) {
-            return false;
-        }
-        
-        FireRequestMessage msg = (FireRequestMessage) obj;
-        return msg.getSenderLabel().equals(getSenderLabel()) && msg.getLits().equals(getLits());
-    }
-    
-    @Override
-    public int hashCode() {
-        return (getSenderLabel() + getLits().toString()).hashCode();
     }
 }

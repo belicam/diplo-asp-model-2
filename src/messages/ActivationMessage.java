@@ -11,8 +11,8 @@ package messages;
  */
 public class ActivationMessage extends Message {
 
-    public ActivationMessage(String senderLabel) {
-        super(senderLabel);
+    public ActivationMessage(int id, String senderLabel) {
+        super(id, senderLabel);
     }
 
     @Override

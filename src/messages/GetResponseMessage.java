@@ -11,8 +11,8 @@ package messages;
  */
 public class GetResponseMessage extends Message {
     
-    public GetResponseMessage(String senderLabel) {
-        super(senderLabel);
+    public GetResponseMessage(int id, String senderLabel) {
+        super(id, senderLabel);
     }
     
     @Override

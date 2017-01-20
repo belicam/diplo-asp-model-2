@@ -13,8 +13,8 @@ public class FireResponseMessage extends Message {
 
     private Object requestMessage;
 
-    public FireResponseMessage(String senderLabel, Object requestMessage) {
-        super(senderLabel);
+    public FireResponseMessage(int id, String senderLabel, Object requestMessage) {
+        super(id, senderLabel);
         this.requestMessage = requestMessage;
     }
 
@@ -36,24 +36,4 @@ public class FireResponseMessage extends Message {
     public void setRequestMessage(Message requestMessage) {
         this.requestMessage = requestMessage;
     }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-
-        if (!(obj instanceof FireResponseMessage)) {
-            return false;
-        }
-
-        FireResponseMessage msg = (FireResponseMessage) obj;
-        return msg.getSenderLabel().equals(getSenderLabel()) && msg.getRequestMessage().equals(getRequestMessage());
-    }
-
-    @Override
-    public int hashCode() {
-        return (getSenderLabel() + getRequestMessage().toString()).hashCode();
-    }
-
 }

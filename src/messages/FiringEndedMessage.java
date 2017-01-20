@@ -10,11 +10,11 @@ package messages;
  * @author martin
  */
 public class FiringEndedMessage extends Message {
-    
+
     public FiringEndedMessage(String senderLabel) {
-        super(senderLabel);
+        super(-1, senderLabel);
     }
-    
+        
     @Override
     public String toString() {
         return "FiringEndedMessage: Program#" + getSenderLabel() + " has ended firing.";
