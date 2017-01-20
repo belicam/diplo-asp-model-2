@@ -11,9 +11,9 @@ package messages;
  */
 public class FireResponseMessage extends Message {
 
-    private Message requestMessage;
+    private Object requestMessage;
 
-    public FireResponseMessage(String senderLabel, Message requestMessage) {
+    public FireResponseMessage(String senderLabel, Object requestMessage) {
         super(senderLabel);
         this.requestMessage = requestMessage;
     }
@@ -26,7 +26,7 @@ public class FireResponseMessage extends Message {
     /**
      * @return the requestMessage
      */
-    public Message getRequestMessage() {
+    public Object getRequestMessage() {
         return requestMessage;
     }
 

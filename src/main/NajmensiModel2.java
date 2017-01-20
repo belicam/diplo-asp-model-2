@@ -29,11 +29,11 @@ public class NajmensiModel2 {
 
     static Router router = new Router();
 
-    public static ArrayList<Program> readRulesFromFile() {
+    public static ArrayList<Program> readRulesFromFile(String fileName) {
         ArrayList<Program> programs;
         programs = new ArrayList<>();
 
-        try (Stream<String> stream = Files.lines(Paths.get("rules1.txt"))) {
+        try (Stream<String> stream = Files.lines(Paths.get(fileName))) {
             stream.forEach((String line) -> {
                 line = line.trim().replaceAll(" ", "");
                 if (!line.isEmpty()) {
@@ -75,7 +75,7 @@ public class NajmensiModel2 {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        ArrayList<Program> programs = readRulesFromFile();
+        ArrayList<Program> programs = readRulesFromFile("rules1.txt");
         ExecutorService executor = Executors.newCachedThreadPool();
 
         programs.stream().forEach((Program p) -> {
