@@ -11,8 +11,9 @@ package messages;
  */
 public class GetResponseMessage extends Message {
     
-    public GetResponseMessage(int id, String senderLabel) {
+    public GetResponseMessage(int id, String senderLabel, int requestId) {
         super(id, senderLabel);
+        this.setReferenceId(requestId);
     }
     
     @Override

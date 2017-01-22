@@ -12,6 +12,7 @@ package messages;
 public abstract class Message {
     private String senderLabel;
     private int id;
+    private int referenceId;
     
     public Message(int id, String senderLabel) {
         this.senderLabel = senderLabel;
@@ -64,5 +65,19 @@ public abstract class Message {
     @Override
     public int hashCode() {
         return (getSenderLabel() + "#" + getId()).hashCode();
+    }
+
+    /**
+     * @return the referenceId
+     */
+    public final int getReferenceId() {
+        return referenceId;
+    }
+
+    /**
+     * @param referenceId the referenceId to set
+     */
+    public final void setReferenceId(int referenceId) {
+        this.referenceId = referenceId;
     }
 }

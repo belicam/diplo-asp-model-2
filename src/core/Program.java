@@ -50,12 +50,12 @@ public class Program implements Runnable {
     private TreeSolver solver;
     private final ActiveMessagesStore activeMessages = new ActiveMessagesStore();
 
-    private String parent = null;
-    private Map<String, Boolean> children = null;
+    private boolean rulesChecked = false;
     private boolean notifyParticipationConfirmed = false;
+    private Map<String, Object> resolvedParent = new HashMap<>();
 
     private final Map<Literal, Set<String>> askedLiterals = new HashMap<>();
-    
+
     private final Map<String, Boolean> participatedFiringEnded = new HashMap<>();
 
     public Program(String label) {
@@ -114,32 +114,34 @@ public class Program implements Runnable {
     }
 
     private void processGetRequest(Object message) {
-        String from = ((GetRequestMessage) message).getSenderLabel();
-        initialProgramLabel = ((GetRequestMessage) message).getInitialSender();
+        GetRequestMessage getRequest = (GetRequestMessage) message;
+        String from = getRequest.getSenderLabel();
+        initialProgramLabel = getRequest.getInitialSender();
 
-        ((GetRequestMessage) message).getLits().forEach(lit -> {
-            if (!this.askedLiterals.containsKey(lit)) {
-                this.getAskedLiterals().put(lit, new HashSet<>());
+        getRequest.getLits().forEach(lit -> {
+            if (!askedLiterals.containsKey(lit)) {
+                askedLiterals.put(lit, new HashSet<>());
             }
-            this.getAskedLiterals().get(lit).add(from);
+            askedLiterals.get(lit).add(from);
         });
 
-        if (this.children != null) {
-            getRouter().sendMessage(from, new GetResponseMessage(idCounter++, this.label));
+        if (rulesChecked) {
+            getRouter().sendMessage(from, new GetResponseMessage(idCounter++, this.label, getRequest.getId()));
         } else {
-            this.parent = from;
-            checkRules(initialProgramLabel);
+            checkRules(message, initialProgramLabel);
             getRouter().sendMessage(initialProgramLabel, new NotifyParticipationRequestMessage(idCounter++, this.label));
+
+            if (activeMessages.noMessages()) {
+                getRouter().sendMessage(from, new GetResponseMessage(idCounter++, this.label, getRequest.getId()));
+            }
         }
     }
 
     private void processGetResponse(Object message) {
         String from = ((GetResponseMessage) message).getSenderLabel();
-        if (!children.get(from)) {
-            children.put(from, Boolean.TRUE);
 
-            checkChildrenResponses();
-        }
+        resolvedParent = activeMessages.resolveChildMessage(from, ((GetResponseMessage) message).getReferenceId());
+        checkGetResponses();
     }
 
     private void processFireRequest(Object message) {
@@ -193,7 +195,7 @@ public class Program implements Runnable {
 
     private void processNotifyParticipationResponse(Object message) {
         this.notifyParticipationConfirmed = true;
-        checkChildrenResponses();
+        checkGetResponses();
     }
 
     private void processFiringEnded(Object message) {
@@ -215,22 +217,14 @@ public class Program implements Runnable {
 
     private void processInit() {
         this.initialProgramLabel = label;
-
-        getRouter().sendMessage(label, new NotifyParticipationRequestMessage(idCounter++, label));
-
-        checkRules(this.label);
-
-        if (children.isEmpty()) {
-            getRouter().sendMessage(this.label, new DependencyGraphBuiltMessage());
-        }
+        getRouter().sendMessage(label, new GetRequestMessage(idCounter++, label, label, new ArrayList<>()));
     }
 
     private void fire(Object parentRequestMessage) {
         Set<Literal> newDerived = solver.findSmallestModel(smallestModel);
         newDerived.removeAll(smallestModel);
 
-        System.out.println("core.Program.fire()#" + label + " newDerived: " + newDerived);
-
+//        System.out.println("core.Program.fire()#" + label + " newDerived: " + newDerived);
         if (!newDerived.isEmpty()) {
             Map<String, Set<Literal>> literalsToSend = new HashMap<>();
             newDerived.forEach(lit -> {
@@ -254,17 +248,7 @@ public class Program implements Runnable {
         }
     }
 
-    private void checkChildrenResponses() {
-        if (!children.containsValue(Boolean.FALSE) && this.notifyParticipationConfirmed) {
-            if (!this.isInitialProgram()) {
-                getRouter().sendMessage(this.parent, new GetResponseMessage(idCounter++, this.label));
-            } else {
-                getRouter().sendMessage(this.label, new DependencyGraphBuiltMessage());
-            }
-        }
-    }
-
-    private void checkRules(String initialSender) {
+    private void checkRules(Object parentMessage, String initialSender) {
         Map<String, List<Literal>> externals = new HashMap<>();
 
         rules.forEach(rule -> {
@@ -279,11 +263,26 @@ public class Program implements Runnable {
             });
         });
 
-        children = new HashMap<>();
         externals.keySet().forEach(key -> {
-            getRouter().sendMessage(key, new GetRequestMessage(idCounter++, label, initialSender, externals.get(key)));
-            children.put(key, Boolean.FALSE);
+            Object childMessage = new GetRequestMessage(idCounter++, label, initialSender, externals.get(key));
+            getRouter().sendMessage(key, childMessage);
+
+            activeMessages.addChildMessage(parentMessage, key, childMessage);
         });
+        rulesChecked = true;
+    }
+
+    private void checkGetResponses() {
+        if (notifyParticipationConfirmed && activeMessages.noMessages()) {
+            if (/*from.equals(label) && */isInitialProgram()) {
+                getRouter().sendMessage(this.label, new DependencyGraphBuiltMessage());
+            } else {
+                resolvedParent.entrySet().forEach((parent) -> {
+                    int refId = ((Message) parent.getValue()).getId();
+                    getRouter().sendMessage(parent.getKey(), new GetResponseMessage(idCounter++, this.label, refId));
+                });
+            }
+        }
     }
 
     public boolean isInitialProgram() {
