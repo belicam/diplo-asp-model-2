@@ -94,7 +94,7 @@ public class Program implements Runnable {
             } else if (message instanceof StopMessage) {
                 processStop();
             } else if (message instanceof ActivationMessage) {
-                processActivation(message);
+                processActivation();
             } else if (message instanceof DependencyGraphBuiltMessage) {
                 processDependencyGraphBuilt();
             } else {
@@ -106,7 +106,7 @@ public class Program implements Runnable {
         }
     }
 
-    private void processActivation(Object message) {
+    private void processActivation() {
         phase = new PhaseTwo(this);
         router.sendMessage(label, new FireRequestMessage(generateMessageId(), label, new HashSet<>()));
     }
@@ -122,6 +122,7 @@ public class Program implements Runnable {
 
     public void processStop() {
         this.setRunning(false);
+        phase = null;
         System.out.println("Program#" + label + " ended with model: " + smallestModel + ", messagesSent: " + messageIdCounter);
 //        return;
     }
