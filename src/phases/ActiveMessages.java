@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package core;
+package phases;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -17,7 +17,7 @@ import messages.Message;
  *
  * @author martin
  */
-public class ActiveMessagesStore {
+public class ActiveMessages {
 
     private Map<Object, Map<String, Set<Object>>> activeMessages = new HashMap<>();
 
@@ -31,27 +31,6 @@ public class ActiveMessagesStore {
             activeMessages.get(keyMessage).put(programLabel, new HashSet<>());
         }
         activeMessages.get(keyMessage).get(programLabel).add(childMessage);
-    }
-
-    public Map<String, Object> resolveChildMessage(String senderLabel, Object childMessage) {
-        Map<String, Object> resolvedMessages = new HashMap<>();
-
-        activeMessages.entrySet().forEach((messagesEntry) -> {
-            if (messagesEntry.getValue().containsKey(senderLabel)) {
-                Set<Object> messagesToSender = messagesEntry.getValue().get(senderLabel);
-                messagesToSender.remove(childMessage);
-                if (messagesToSender.isEmpty()) {
-                    messagesEntry.getValue().remove(senderLabel);
-
-                    if (messagesEntry.getValue().isEmpty()) {
-                        String resolvedLabel = ((Message) messagesEntry.getKey()).getSenderLabel();
-                        resolvedMessages.put(resolvedLabel, messagesEntry.getKey());
-                    }
-                }
-            }
-        });
-
-        return resolvedMessages;
     }
 
     public Map<String, Object> resolveChildMessage(String senderLabel, int childId) {

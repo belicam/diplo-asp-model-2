@@ -11,11 +11,9 @@ package messages;
  */
 public class FireResponseMessage extends Message {
 
-    private Object requestMessage;
-
-    public FireResponseMessage(int id, String senderLabel, Object requestMessage) {
+    public FireResponseMessage(int id, String senderLabel, int referenceId) {
         super(id, senderLabel);
-        this.requestMessage = requestMessage;
+        this.setReferenceId(referenceId);
     }
 
     @Override
@@ -23,17 +21,4 @@ public class FireResponseMessage extends Message {
         return "FireResponseMessage: Program#" + getSenderLabel() + " responds to fire";
     }
 
-    /**
-     * @return the requestMessage
-     */
-    public Object getRequestMessage() {
-        return requestMessage;
-    }
-
-    /**
-     * @param requestMessage the requestMessage to set
-     */
-    public void setRequestMessage(Message requestMessage) {
-        this.requestMessage = requestMessage;
-    }
 }
