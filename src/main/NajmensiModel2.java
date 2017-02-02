@@ -7,12 +7,14 @@ package main;
 
 import core.Constant;
 import core.Program;
+import core.ProgramGenerator;
 import core.Router;
 import core.Rule;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -75,6 +77,11 @@ public class NajmensiModel2 {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+
+        String bs = "a,b,c,d";        
+        ProgramGenerator.generate(2, bs.split(",")).stream().forEach(line -> System.out.println(line));
+        
+/*
         ArrayList<Program> programs = readRulesFromFile("rules1.txt");
         ExecutorService executor = Executors.newCachedThreadPool();
 
@@ -92,6 +99,7 @@ public class NajmensiModel2 {
         } catch (InterruptedException e) {
             System.out.println("najmensimodel2.NajmensiModel2.main() all threads finished.");
         }
+*/
     }
 
 }
