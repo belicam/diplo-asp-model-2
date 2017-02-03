@@ -6,14 +6,15 @@
 package main;
 
 import core.Program;
-import core.ProgramGenerator;
-import core.ProgramParser;
+import utilities.ProgramGenerator;
+import utilities.ProgramParser;
 import core.Router;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import javax.swing.JFrame;
 import messages.InitMessage;
 
 /**
@@ -28,11 +29,15 @@ public class NajmensiModel2 {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-
-        int programsCount = 3;
+        JFrame frame = new JFrame();
+        frame.setSize(640, 480);
+//        frame.setVisible(true);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);        
+        
+        int programsCount = 100;
         String[] baseLits = "a,b,c,d".split(",");
         int maxBodySize = 6;
-        int maxRulesCount = baseLits.length * programsCount;
+        int maxRulesCount = baseLits.length;
 
         List<String> generated = ProgramGenerator.generate(programsCount, baseLits, maxRulesCount, maxBodySize);
         List<Program> programs = new ArrayList<>();

@@ -3,8 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package core;
+package utilities;
 
+import core.Constant;
+import core.Program;
+import core.Rule;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;

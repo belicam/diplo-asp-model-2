@@ -123,7 +123,7 @@ public class Program implements Runnable {
     public void processStop() {
         this.setRunning(false);
         phase = null;
-        System.out.println("Program#" + label + " ended with model: " + smallestModel + ", messagesSent: " + messageIdCounter);
+        System.out.println("Program#" + label + " ended. messagesSent: " + messageIdCounter + ", model: " + smallestModel);
 //        return;
     }
 

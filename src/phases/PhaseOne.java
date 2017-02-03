@@ -56,7 +56,7 @@ public class PhaseOne implements Phase {
     }
 
     private void processGetRequest(Object message) {
-        System.out.println("phases.PhaseOne.processGetRequest()");
+//        System.out.println("phases.PhaseOne.processGetRequest()");
         GetRequestMessage request = (GetRequestMessage) message;
         String from = request.getSenderLabel();
         program.setInitialProgramLabel(request.getInitialSender());

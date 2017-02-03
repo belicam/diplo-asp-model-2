@@ -26,17 +26,17 @@ public class Router {
     }
 
     public void sendMessage(String programName, Object message) {
-        System.out.println("`" + message + "` sent to: Program#" + programName);
+//        System.out.println("`" + message + "` sent to: Program#" + programName);
         getPrograms().get(programName).receiveMessage(message);
     }
     
     public void broadcastMessage(Object message) {
-        System.out.println("Broadcasting: `" + message + "`");
+//        System.out.println("Broadcasting: `" + message + "`");
         getPrograms().values().forEach(program -> program.receiveMessage(message));
     }
     
     public void sendMessage(Set<String> programs, Object message) {
-        System.out.println("`" + message + "` sent to programs: " + programs);
+//        System.out.println("`" + message + "` sent to programs: " + programs);
         programs.forEach(programName -> getPrograms().get(programName).receiveMessage(message));        
     }
 

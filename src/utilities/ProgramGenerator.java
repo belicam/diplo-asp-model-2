@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package core;
+package utilities;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,6 +48,7 @@ public class ProgramGenerator {
         }
         
         result.forEach(line -> System.out.println(line));
+        System.out.println("------------------------------------");
         return result;
     }
 }
