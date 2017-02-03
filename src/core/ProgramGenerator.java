@@ -46,7 +46,8 @@ public class ProgramGenerator {
                 }
             }
         }
-
+        
+        result.forEach(line -> System.out.println(line));
         return result;
     }
 }
