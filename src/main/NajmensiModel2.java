@@ -78,8 +78,14 @@ public class NajmensiModel2 {
      */
     public static void main(String[] args) {
 
-        String bs = "a,b,c,d";        
-        ProgramGenerator.generate(2, bs.split(",")).stream().forEach(line -> System.out.println(line));
+        int programsCount = 3;
+        String[] baseLits = "a,b,c,d".split(",");        
+        int maxBodySize = 6;
+        int maxRulesCount = baseLits.length * programsCount;
+        
+        ProgramGenerator.generate(programsCount, baseLits, maxRulesCount, maxBodySize)
+                .stream()
+                .forEach(line -> System.out.println(line));
         
 /*
         ArrayList<Program> programs = readRulesFromFile("rules1.txt");
