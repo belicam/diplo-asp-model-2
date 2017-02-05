@@ -26,9 +26,9 @@ import solver.TreeSolver;
  */
 public class PhaseTwo implements Phase {
 
-    private Program program;
-    private TreeSolver solver;
-    private ActiveMessages activeMessages;
+    private final Program program;
+    private final TreeSolver solver;
+    private final ActiveMessages activeMessages;
 
     private final Map<String, Boolean> participatedFiringEnded = new HashMap<>();
 
@@ -78,6 +78,11 @@ public class PhaseTwo implements Phase {
         Set<Literal> obtainedLiterals = requestMessage.getLits();
         String sender = requestMessage.getSenderLabel();
 
+//        meranie casu pre testovacie ucely
+        if (sender.equals(program.getLabel())) {
+            program.setStartTime(System.currentTimeMillis());
+        }
+        
         program.getSmallestModel().addAll(obtainedLiterals);
         fire(requestMessage);
 
@@ -93,6 +98,8 @@ public class PhaseTwo implements Phase {
 
 //        response som si poslal sam sebe
         if (senderLabel.equals(program.getLabel())) {
+            program.setEndTime(System.currentTimeMillis());
+            
             sendMessage(program.getInitialProgramLabel(), new FiringEndedMessage(program.getLabel()));
         } else {
 //        vymazem v mape request message, na ktoru prisla odpoved | poslem response ak po vymazani je prazdne pole

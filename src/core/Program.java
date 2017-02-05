@@ -5,7 +5,6 @@
  */
 package core;
 
-import phases.ActiveMessages;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,14 +18,8 @@ import java.util.logging.Logger;
 import messages.ActivationMessage;
 import messages.DependencyGraphBuiltMessage;
 import messages.FireRequestMessage;
-import messages.FireResponseMessage;
-import messages.FiringEndedMessage;
 import messages.GetRequestMessage;
-import messages.GetResponseMessage;
 import messages.InitMessage;
-import messages.Message;
-import messages.NotifyParticipationRequestMessage;
-import messages.NotifyParticipationResponseMessage;
 import messages.StopMessage;
 import phases.Phase;
 import phases.PhaseOne;
@@ -38,15 +31,19 @@ import phases.PhaseTwo;
  */
 public class Program implements Runnable {
 
-    private boolean running;
+    private boolean running = true;
+
     private String initialProgramLabel = null;
     private int messageIdCounter = 0;
-
     private boolean participationConfirmed = false;
-    private final Set<String> participatedPrograms = new HashSet<>();
-
+    
     private String label;
     private List<Rule> rules = new ArrayList<>();
+
+    private long startTime = 0;    
+    private long endTime = 0;
+
+    private final Set<String> participatedPrograms = new HashSet<>();
 
     private final BlockingQueue<Object> messages = new LinkedBlockingQueue<>();
     private final Set<Literal> smallestModel = new HashSet<>();
@@ -58,13 +55,11 @@ public class Program implements Runnable {
 
     public Program(String label) {
         this.label = label;
-        this.running = true;
     }
 
     public Program(String label, Router router) {
         this.label = label;
         this.router = router;
-        this.running = true;
     }
 
     @Override
@@ -107,6 +102,7 @@ public class Program implements Runnable {
     }
 
     private void processActivation() {
+        setStartTime(System.currentTimeMillis());
         phase = new PhaseTwo(this);
         router.sendMessage(label, new FireRequestMessage(generateMessageId(), label, new HashSet<>()));
     }
@@ -123,7 +119,8 @@ public class Program implements Runnable {
     public void processStop() {
         this.setRunning(false);
         phase = null;
-        System.out.println("Program#" + label + " ended. messagesSent: " + messageIdCounter + ", model: " + smallestModel);
+
+        System.out.println("Program#" + label + " ended in " + (endTime - startTime) + "ms. messagesSent: " + messageIdCounter + ", model: " + smallestModel);
 //        return;
     }
 
@@ -249,5 +246,33 @@ public class Program implements Runnable {
      */
     public void setParticipationConfirmed(boolean participationConfirmed) {
         this.participationConfirmed = participationConfirmed;
+    }
+
+    /**
+     * @return the startTime
+     */
+    public long getStartTime() {
+        return startTime;
+    }
+
+    /**
+     * @param startTime the startTime to set
+     */
+    public void setStartTime(long startTime) {
+        this.startTime = startTime;
+    }
+
+    /**
+     * @return the endTime
+     */
+    public long getEndTime() {
+        return endTime;
+    }
+
+    /**
+     * @param endTime the endTime to set
+     */
+    public void setEndTime(long endTime) {
+        this.endTime = endTime;
     }
 }

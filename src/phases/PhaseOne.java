@@ -25,9 +25,9 @@ import messages.NotifyParticipationResponseMessage;
  */
 public class PhaseOne implements Phase {
 
-    Program program;
-
-    private ActiveMessages activeMessages;
+    private final Program program;
+    private final ActiveMessages activeMessages;
+    
     private Map<String, Object> resolvedParent = new HashMap<>();
     private boolean rulesChecked;
 
