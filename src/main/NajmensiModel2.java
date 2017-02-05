@@ -21,6 +21,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.swing.JFrame;
 import messages.InitMessage;
 import org.jfree.chart.ChartFactory;
@@ -52,9 +53,9 @@ public class NajmensiModel2 {
                 true, true, false
         );
 
-        int width = 1280;
+        int width = 1300;
         /* Width of the image */
-        int height = 480;
+        int height = 600;
         /* Height of the image */
         File chartFile = new File("LineChart.jpeg");
         ChartUtilities.saveChartAsJPEG(chartFile, lineChart, width, height);
@@ -64,7 +65,7 @@ public class NajmensiModel2 {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        int programsCount = 100;
+        int programsCount = 500;
         String[] baseLits = "a,b,c,d,e,f".split(",");
         int maxBodySize = 10;
         int maxRulesCount = 60;
@@ -95,11 +96,13 @@ public class NajmensiModel2 {
         }
 
         List<Long> time = programs.stream()
+                .filter(p -> p.isParticipationConfirmed())
                 .sorted((p1, p2) -> Integer.compare(p1.getRules().size(), p2.getRules().size()))
                 .map(p -> p.getEndTime() - p.getStartTime())
                 .collect(Collectors.toList());
-        
+
         List<Integer> rulesCount = programs.stream()
+                .filter(p -> p.isParticipationConfirmed())
                 .sorted((p1, p2) -> Integer.compare(p1.getRules().size(), p2.getRules().size()))
                 .map(p -> p.getRules().size())
                 .collect(Collectors.toList());
