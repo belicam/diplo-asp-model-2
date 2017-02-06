@@ -102,7 +102,6 @@ public class Program implements Runnable {
     }
 
     private void processActivation() {
-        setStartTime(System.currentTimeMillis());
         phase = new PhaseTwo(this);
         router.sendMessage(label, new FireRequestMessage(generateMessageId(), label, new HashSet<>()));
     }

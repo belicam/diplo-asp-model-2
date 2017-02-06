@@ -61,6 +61,9 @@ public class PhaseOne implements Phase {
         String from = request.getSenderLabel();
         program.setInitialProgramLabel(request.getInitialSender());
 
+//        program.setStartTime(System.currentTimeMillis());
+        program.setStartTime(System.nanoTime());
+        
         request.getLits().forEach(lit -> {
             if (!program.getAskedLiterals().containsKey(lit)) {
                 program.getAskedLiterals().put(lit, new HashSet<>());

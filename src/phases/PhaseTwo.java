@@ -11,8 +11,10 @@ import core.Rule;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import messages.FireRequestMessage;
 import messages.FireResponseMessage;
 import messages.FiringEndedMessage;
@@ -62,9 +64,10 @@ public class PhaseTwo implements Phase {
 
     private void processFiringEnded(Object message) {
         String sender = ((FiringEndedMessage) message).getSenderLabel();
+
         if (!participatedFiringEnded.get(sender)) {
             participatedFiringEnded.put(sender, Boolean.TRUE);
-
+            
             // test  ci skoncili vsetci
             if (!participatedFiringEnded.containsValue(Boolean.FALSE)) {
 //                TODO VYMYSLET INAK
@@ -77,11 +80,6 @@ public class PhaseTwo implements Phase {
         FireRequestMessage requestMessage = (FireRequestMessage) message;
         Set<Literal> obtainedLiterals = requestMessage.getLits();
         String sender = requestMessage.getSenderLabel();
-
-//        meranie casu pre testovacie ucely
-        if (sender.equals(program.getLabel())) {
-            program.setStartTime(System.currentTimeMillis());
-        }
         
         program.getSmallestModel().addAll(obtainedLiterals);
         fire(requestMessage);
@@ -98,7 +96,8 @@ public class PhaseTwo implements Phase {
 
 //        response som si poslal sam sebe
         if (senderLabel.equals(program.getLabel())) {
-            program.setEndTime(System.currentTimeMillis());
+//            program.setEndTime(System.currentTimeMillis());
+            program.setEndTime(System.nanoTime());
             
             sendMessage(program.getInitialProgramLabel(), new FiringEndedMessage(program.getLabel()));
         } else {
