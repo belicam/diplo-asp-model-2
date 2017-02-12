@@ -9,7 +9,6 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Stroke;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,8 +21,6 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.DeviationRenderer;
 import org.jfree.data.xy.XYDataset;
-import org.jfree.data.xy.XYSeries;
-import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.data.xy.YIntervalSeries;
 import org.jfree.data.xy.YIntervalSeriesCollection;
 import org.jfree.ui.RectangleInsets;
@@ -32,44 +29,45 @@ import org.jfree.ui.RectangleInsets;
  *
  * @author martin
  */
-public class GraphRenderer {    
+public class GraphRenderer {
+
     Map<Integer, List<Long>> data;
-    
+
     public GraphRenderer() {
         data = new HashMap<>();
     }
-    
+
     public void addValues(List<Integer> xValues, List<Long> yValues) {
         for (int i = 0; i < xValues.size(); i++) {
-            if (!data.containsKey(xValues.get(i))) {            
+            if (!data.containsKey(xValues.get(i))) {
                 data.put(xValues.get(i), new ArrayList<>());
             }
             data.get(xValues.get(i)).add(yValues.get(i));
         }
     }
-    
+
     private XYDataset createDataset() {
-        System.out.println("utilities.GraphRenderer.createDataset() " + data);
         YIntervalSeriesCollection dataset = new YIntervalSeriesCollection();
         YIntervalSeries s0 = new YIntervalSeries("");
 
         data.entrySet().forEach(point -> {
-            double mean   = (1 / point.getValue().size()) * point.getValue().stream().mapToLong(Number::longValue).sum();
-            
+//            double mean = (1 / point.getValue().size()) * point.getValue().stream().collect(Collectors.summingLong(Long::longValue));
+            double mean = point.getValue().stream().collect(Collectors.summingLong(Long::longValue)) / point.getValue().size();
+
             double meanSum = point.getValue().stream()
                     .map((y) -> Math.pow(y - mean, 2))
                     .collect(Collectors.summingDouble(Double::doubleValue));
-            
-            double stddev = Math.sqrt((1 / point.getValue().size()) * meanSum);
-            System.out.println(mean);
+
+//            double stddev = Math.sqrt((1 / point.getValue().size()) * meanSum);
+            double stddev = Math.sqrt(meanSum / point.getValue().size());
+            System.out.println(mean + "; " + meanSum + "; " + stddev);
             s0.add(point.getKey(), mean, mean - stddev, mean + stddev);
         });
 
-        
         dataset.addSeries(s0);
         return dataset;
     }
-    
+
     public void createGraph() {
         XYDataset dataset = createDataset();
 
@@ -82,7 +80,7 @@ public class GraphRenderer {
         );
 
         lineChart.setBackgroundPaint(Color.white);
-        
+
         XYPlot plot = (XYPlot) lineChart.getPlot();
         plot.setBackgroundPaint(Color.WHITE);
         plot.setAxisOffset(new RectangleInsets(5.0, 5.0, 5.0, 5.0));
@@ -106,7 +104,7 @@ public class GraphRenderer {
         renderer.setAlpha(0.12f);
 
         plot.setRenderer(renderer);
-        
+
         int width = 1300;
         /* Width of the image */
         int height = 600;
