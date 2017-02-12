@@ -37,7 +37,7 @@ public class NajmensiModel2 {
 
         GraphRenderer grenderer = new GraphRenderer();
 
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 10; i++) {
             router = new Router();
             List<String> generated = ProgramGenerator.generate(programsCount, baseLits, maxRulesCount, maxBodySize);
             List<Program> programs = new ArrayList<>();

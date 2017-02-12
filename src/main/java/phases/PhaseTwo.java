@@ -95,11 +95,11 @@ public class PhaseTwo implements Phase {
         String senderLabel = responseMessage.getSenderLabel();
 
 //        response som si poslal sam sebe
-        if (senderLabel.equals(program.getLabel())) {
+        if (senderLabel.equals(program.getLabel())) {            
+            sendMessage(program.getInitialProgramLabel(), new FiringEndedMessage(program.getLabel()));
+
 //            program.setEndTime(System.currentTimeMillis());
             program.setEndTime(System.nanoTime());
-            
-            sendMessage(program.getInitialProgramLabel(), new FiringEndedMessage(program.getLabel()));
         } else {
 //        vymazem v mape request message, na ktoru prisla odpoved | poslem response ak po vymazani je prazdne pole
             activeMessages.resolveChildMessage(senderLabel, responseMessage.getReferenceId()).entrySet().forEach(resolved -> {

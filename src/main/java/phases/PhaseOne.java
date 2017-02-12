@@ -59,10 +59,11 @@ public class PhaseOne implements Phase {
 //        System.out.println("phases.PhaseOne.processGetRequest()");
         GetRequestMessage request = (GetRequestMessage) message;
         String from = request.getSenderLabel();
-        program.setInitialProgramLabel(request.getInitialSender());
 
 //        program.setStartTime(System.currentTimeMillis());
         program.setStartTime(System.nanoTime());
+
+        program.setInitialProgramLabel(request.getInitialSender());
         
         request.getLits().forEach(lit -> {
             if (!program.getAskedLiterals().containsKey(lit)) {

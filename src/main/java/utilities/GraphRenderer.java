@@ -60,7 +60,7 @@ public class GraphRenderer {
 
 //            double stddev = Math.sqrt((1 / point.getValue().size()) * meanSum);
             double stddev = Math.sqrt(meanSum / point.getValue().size());
-            System.out.println(mean + "; " + meanSum + "; " + stddev);
+
             s0.add(point.getKey(), mean, mean - stddev, mean + stddev);
         });
 
