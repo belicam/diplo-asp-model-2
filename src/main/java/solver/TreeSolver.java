@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import core.Literal;
 import core.Rule;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -17,14 +18,14 @@ import java.util.Set;
  */
 public class TreeSolver {
 
-    private ArrayList<Rule> rules = new ArrayList<>();
-    private ArrayList<NodeRule> trees = new ArrayList<>();
+    private List<Rule> rules = new ArrayList<>();
+    private List<NodeRule> trees = new ArrayList<>();
 
     private Cache c = new Cache();
 
     private HashSet<Literal> smallestModel = new HashSet<>();
 
-    public TreeSolver(ArrayList<Rule> rules) {
+    public TreeSolver(List<Rule> rules) {
         this.rules = rules;
 
         generateRuleTree();
@@ -54,14 +55,14 @@ public class TreeSolver {
     /**
      * @return rules
      */
-    public ArrayList<Rule> getRules() {
+    public List<Rule> getRules() {
         return this.rules;
     }
 
     /**
      * @return rules
      */
-    public ArrayList<NodeRule> getTrees() {
+    public List<NodeRule> getTrees() {
         return this.trees;
     }
 }

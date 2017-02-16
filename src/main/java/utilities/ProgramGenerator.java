@@ -23,8 +23,8 @@ public class ProgramGenerator {
 
         for (int programLabel = 0; programLabel < programsCount; programLabel++) {
             result.add("#" + programLabel);
-            int numRules = rand.nextInt(maxRulesCount) + 1;
-
+            int numRules = maxRulesCount - rand.nextInt(Math.round(maxRulesCount * 0.2f));
+            
             for (int j = 0; j < numRules; j++) {
                 String head = programLabel + ":" + base[rand.nextInt(base.length)];
                 int numBodyLits = rand.nextInt(maxBodyCount);

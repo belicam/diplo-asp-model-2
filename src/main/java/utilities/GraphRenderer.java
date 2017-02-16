@@ -9,7 +9,9 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Stroke;
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +22,6 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.DeviationRenderer;
-import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.YIntervalSeries;
 import org.jfree.data.xy.YIntervalSeriesCollection;
 import org.jfree.ui.RectangleInsets;
@@ -31,49 +32,58 @@ import org.jfree.ui.RectangleInsets;
  */
 public class GraphRenderer {
 
-    Map<Integer, List<Long>> data;
+    YIntervalSeriesCollection dataset;
+    String chartTitle;
 
-    public GraphRenderer() {
-        data = new HashMap<>();
+    Map<String, Map<Integer, List<Long>>> seriesData;
+
+    public GraphRenderer(String chartTitle) {
+        this.seriesData = new HashMap<>();
+        this.dataset = new YIntervalSeriesCollection();
+        this.chartTitle = chartTitle;
     }
 
-    public void addValues(List<Integer> xValues, List<Long> yValues) {
+    public void addValuesToSeries(String seriesLabel, List<Integer> xValues, List<Long> yValues) {
         for (int i = 0; i < xValues.size(); i++) {
-            if (!data.containsKey(xValues.get(i))) {
-                data.put(xValues.get(i), new ArrayList<>());
+            if (!seriesData.get(seriesLabel).containsKey(xValues.get(i))) {
+                seriesData.get(seriesLabel).put(xValues.get(i), new ArrayList<>());
             }
-            data.get(xValues.get(i)).add(yValues.get(i));
+            seriesData.get(seriesLabel).get(xValues.get(i)).add(yValues.get(i));
         }
     }
 
-    private XYDataset createDataset() {
-        YIntervalSeriesCollection dataset = new YIntervalSeriesCollection();
-        YIntervalSeries s0 = new YIntervalSeries("");
+    public void newSeries(String name) {
+        seriesData.put(name, new HashMap<>());
+    }
 
-        data.entrySet().forEach(point -> {
-//            double mean = (1 / point.getValue().size()) * point.getValue().stream().collect(Collectors.summingLong(Long::longValue));
-            double mean = point.getValue().stream().collect(Collectors.summingLong(Long::longValue)) / point.getValue().size();
+    private void finalizeSeries() {
+//        vypocet odchylky z hodnot + pridanie series do datasetu
 
-            double meanSum = point.getValue().stream()
-                    .map((y) -> Math.pow(y - mean, 2))
-                    .collect(Collectors.summingDouble(Double::doubleValue));
+        seriesData.entrySet().forEach((serie) -> {
+            YIntervalSeries newSeries = new YIntervalSeries(serie.getKey());
 
-//            double stddev = Math.sqrt((1 / point.getValue().size()) * meanSum);
-            double stddev = Math.sqrt(meanSum / point.getValue().size());
+            serie.getValue().entrySet().forEach(point -> {
+                double mean = point.getValue().stream().collect(Collectors.summingLong(Long::longValue)) / point.getValue().size();
 
-            s0.add(point.getKey(), mean, mean - stddev, mean + stddev);
+                double meanSum = point.getValue().stream()
+                        .map((y) -> Math.pow(y - mean, 2))
+                        .collect(Collectors.summingDouble(Double::doubleValue));
+
+                double stddev = Math.sqrt(meanSum / point.getValue().size());
+
+                newSeries.add(point.getKey(), mean, mean - stddev, mean + stddev);
+            });
+
+            dataset.addSeries(newSeries);
         });
-
-        dataset.addSeries(s0);
-        return dataset;
     }
 
     public void createGraph() {
-        XYDataset dataset = createDataset();
+        finalizeSeries();
 
         JFreeChart lineChart = ChartFactory.createXYLineChart(
-                "models test",
-                "Number of Rules", "Time",
+                chartTitle,
+                "Number of Rules", "Time (µs)",
                 dataset,
                 PlotOrientation.VERTICAL,
                 true, true, false
@@ -89,17 +99,11 @@ public class GraphRenderer {
 
         DeviationRenderer renderer = new DeviationRenderer(true, false);
         Stroke stroke = new BasicStroke(2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
-        if (dataset.getSeriesCount() == 1) {
-            renderer.setSeriesStroke(0, stroke);
-            renderer.setSeriesPaint(0, Color.RED);
-            renderer.setSeriesFillPaint(0, Color.RED);
-        } else {
-//            for (int i = 0; i < dataset.getSeriesCount(); i++) {
-//                renderer.setSeriesStroke(i, stroke);
-//                Color color = renderer.getColorProvider().getPointColor((double)i / (double)(dataset.getSeriesCount() - 1));
-//                renderer.setSeriesPaint(i, color);
-//                renderer.setSeriesFillPaint(i, color);
-//            }
+        for (int i = 0; i < dataset.getSeriesCount(); i++) {
+            renderer.setSeriesStroke(i, stroke);
+            Color color = new Color((int) (Math.random() * 256), (int) (Math.random() * 256), (int) (Math.random() * 256));
+            renderer.setSeriesPaint(i, color);
+            renderer.setSeriesFillPaint(i, color);
         }
         renderer.setAlpha(0.12f);
 
@@ -111,7 +115,8 @@ public class GraphRenderer {
         /* Height of the image */
 
         try {
-            File chartFile = new File("LineChart.jpeg");
+            SimpleDateFormat dateFormat = new SimpleDateFormat("HH-mm-ss__yyyy-MM-dd");
+            File chartFile = new File("charts/" + dateFormat.format(new Date()) + ".jpg");
             ChartUtilities.saveChartAsJPEG(chartFile, lineChart, width, height);
         } catch (Exception e) {
         }

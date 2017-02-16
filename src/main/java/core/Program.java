@@ -36,11 +36,11 @@ public class Program implements Runnable {
     private String initialProgramLabel = null;
     private int messageIdCounter = 0;
     private boolean participationConfirmed = false;
-    
+
     private String label;
     private List<Rule> rules = new ArrayList<>();
 
-    private long startTime = 0;    
+    private long startTime = 0;
     private long endTime = 0;
 
     private final Set<String> participatedPrograms = new HashSet<>();
@@ -72,6 +72,11 @@ public class Program implements Runnable {
                 Logger.getLogger(Program.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+    }
+
+    public void doStep() {
+        Object message = getMessages().poll();
+        processMessage(message);
     }
 
     public void sendMessage(String receiverLabel, Object message) {
@@ -119,7 +124,7 @@ public class Program implements Runnable {
         this.setRunning(false);
         phase = null;
 
-        System.out.println("Program#" + label + " ended in " + (endTime - startTime) + "ms. messagesSent: " + messageIdCounter + ", model: " + smallestModel);
+//        System.out.println("Program#" + label + " ended in " + (endTime - startTime) + "ms. messagesSent: " + messageIdCounter + ", model: " + smallestModel);
 //        return;
     }
 
