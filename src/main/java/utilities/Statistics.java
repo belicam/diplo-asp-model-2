@@ -25,7 +25,7 @@ public class Statistics {
 
     public static final int MAX_RULE_BODY_SIZE = 10;
 
-    public static int MAX_RULES_COUNT = 50;
+//    public static int MAX_RULES_COUNT = 50;
     public static int PROGRAMS_COUNT = 50;
     public static int ITERATIONS_COUNT = 10;
 
@@ -42,8 +42,8 @@ public class Statistics {
         }
     }
 
-    public static void singleThreadedVsNonDist() {
-        GraphRenderer grenderer = new GraphRenderer("Max rules: " + MAX_RULES_COUNT);
+    public static void singleThreadedVsNonDist(int[] rulesCount) {
+        GraphRenderer grenderer = new GraphRenderer("Number of programs: " + PROGRAMS_COUNT);
 
         String singleThreadedLabel = "Single-threaded distributed";
         String nonDistLabel = "Non-distributed";
@@ -52,16 +52,18 @@ public class Statistics {
         grenderer.newSeries(nonDistLabel);
 
         MeasuredValues measured;
-        for (int i = 0; i < ITERATIONS_COUNT; i++) {
-            System.out.println("Iteration " + i + " started.");
-            List<String> generated = ProgramGenerator.generate(PROGRAMS_COUNT, BASE_LITERALS, MAX_RULES_COUNT, MAX_RULE_BODY_SIZE);
+        for (int cnt : rulesCount) {
+            for (int i = 0; i < ITERATIONS_COUNT; i++) {
+                System.out.println("Iteration " + i + " started.");
+                List<String> generated = ProgramGenerator.generate(PROGRAMS_COUNT, BASE_LITERALS, cnt, MAX_RULE_BODY_SIZE);
 
-            measured = runSingleThreaded(generated);
-            grenderer.addValuesToSeries(singleThreadedLabel, measured.rulesCount, measured.time);
+                measured = runSingleThreaded(generated);
+                grenderer.addValuesToSeries(singleThreadedLabel, measured.rulesCount, measured.time);
 
-            measured = runNonDist(generated);
-            grenderer.addValuesToSeries(nonDistLabel, measured.rulesCount, measured.time);
-            System.out.println("Iteration " + i + " ended.");
+                measured = runNonDist(generated);
+                grenderer.addValuesToSeries(nonDistLabel, measured.rulesCount, measured.time);
+                System.out.println("Iteration " + i + " ended.");
+            }
         }
         grenderer.createGraph();
     }

@@ -54,7 +54,7 @@ public class ProgramGenerator {
 
             generated.forEach((h, bodies) -> {
                 bodies.forEach(b -> {
-                    String rule = h + " :- " + String.join(", ", b);
+                    String rule = h + ":-" + String.join(",", b);
                     result.add(rule);
                 });
             });

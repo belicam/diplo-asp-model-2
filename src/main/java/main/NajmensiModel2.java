@@ -19,11 +19,8 @@ public class NajmensiModel2 {
     public static void main(String[] args) {
         Statistics.PROGRAMS_COUNT = 50;
 
-        int[] rulesCnt = new int[]{10, 50, 100, 500, 1000, 5000, 10000};
-        for (int cnt : rulesCnt) {
-            Statistics.MAX_RULES_COUNT = cnt;
-            Statistics.singleThreadedVsNonDist();
-        }
+        int[] rulesCnt = new int[]{10, 50, 100, 500, 1000, 5000, 10000, 20000, 40000};
+        Statistics.singleThreadedVsNonDist(rulesCnt);
     }
 
 }
