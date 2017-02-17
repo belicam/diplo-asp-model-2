@@ -13,15 +13,17 @@ import utilities.Statistics;
  */
 public class NajmensiModel2 {
 
-
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        Statistics.programsCount = 50;
-        Statistics.maxRulesCount = 10;
-        
-        Statistics.singleThreadedVsNonDist();
+        Statistics.PROGRAMS_COUNT = 50;
+
+        int[] rulesCnt = new int[]{10, 50, 100, 500, 1000, 5000, 10000};
+        for (int cnt : rulesCnt) {
+            Statistics.MAX_RULES_COUNT = cnt;
+            Statistics.singleThreadedVsNonDist();
+        }
     }
 
 }

@@ -23,12 +23,13 @@ import solver.TreeSolver;
  */
 public class Statistics {
 
-    public static int programsCount = 50;
-    public static int maxRulesCount = 10;
-    public static int iterationsCount = 10;
+    public static final int MAX_RULE_BODY_SIZE = 10;
 
-    public static String[] baseLits = "a,b,c,d,e,f".split(",");
-    public static int maxBodySize = 10;
+    public static int MAX_RULES_COUNT = 50;
+    public static int PROGRAMS_COUNT = 50;
+    public static int ITERATIONS_COUNT = 10;
+
+    public static String[] BASE_LITERALS = "a,b,c,d,e,f".split(",");
 
     private static class MeasuredValues {
 
@@ -42,7 +43,7 @@ public class Statistics {
     }
 
     public static void singleThreadedVsNonDist() {
-        GraphRenderer grenderer = new GraphRenderer(programsCount + " programs");
+        GraphRenderer grenderer = new GraphRenderer("Max rules: " + MAX_RULES_COUNT);
 
         String singleThreadedLabel = "Single-threaded distributed";
         String nonDistLabel = "Non-distributed";
@@ -51,19 +52,22 @@ public class Statistics {
         grenderer.newSeries(nonDistLabel);
 
         MeasuredValues measured;
-        for (int i = 0; i < iterationsCount; i++) {
-            List<String> generated = ProgramGenerator.generate(programsCount, baseLits, maxRulesCount, maxBodySize);
+        for (int i = 0; i < ITERATIONS_COUNT; i++) {
+            System.out.println("Iteration " + i + " started.");
+            List<String> generated = ProgramGenerator.generate(PROGRAMS_COUNT, BASE_LITERALS, MAX_RULES_COUNT, MAX_RULE_BODY_SIZE);
 
             measured = runSingleThreaded(generated);
             grenderer.addValuesToSeries(singleThreadedLabel, measured.rulesCount, measured.time);
 
             measured = runNonDist(generated);
             grenderer.addValuesToSeries(nonDistLabel, measured.rulesCount, measured.time);
+            System.out.println("Iteration " + i + " ended.");
         }
         grenderer.createGraph();
     }
 
     private static MeasuredValues runNonDist(List<String> generatedPrograms) {
+        System.out.println("Non-distributed started.");
         generatedPrograms.removeIf((line) -> !line.equals("#0") && line.contains("#"));
 
         Long start = System.nanoTime();
@@ -76,10 +80,12 @@ public class Statistics {
         measured.time.add((end - start) / 1000);
         measured.rulesCount.add(p.getRules().size());
 
+        System.out.println("Non-distributed ended.");
         return measured;
     }
 
     private static MeasuredValues runMultiThreaded(List<String> generatedPrograms) {
+        System.out.println("Distributed(multi-threaded) started.");
         Router router;
 
         router = new Router();
@@ -112,10 +118,12 @@ public class Statistics {
                 .map(p -> p.getRules().size())
                 .collect(Collectors.toList());
 
+        System.out.println("Distributed(multi-threaded) ended.");
         return new MeasuredValues(time, rulesCount);
     }
 
     private static MeasuredValues runSingleThreaded(List<String> generatedPrograms) {
+        System.out.println("Distributed(single-threaded) started.");
         Router router;
 
         router = new Router();
@@ -126,24 +134,22 @@ public class Statistics {
             router.addProgram(p);
         }
 
-        router.sendMessage(programs.get(0).getLabel(), new InitMessage());
+        long start = System.nanoTime();
 
+        router.sendMessage(programs.get(0).getLabel(), new InitMessage());
         while (programs.get(0).isRunning()) {
             programs.forEach(p -> p.doStep());
         }
 
-        List<Long> time = programs.stream()
-                .filter(p -> p.isParticipationConfirmed())
-                .sorted((p1, p2) -> Integer.compare(p1.getRules().size(), p2.getRules().size()))
-                .map(p -> (p.getEndTime() - p.getStartTime()) / 1000) // microseconds
-                .collect(Collectors.toList());
+        long end = System.nanoTime();
 
-        List<Integer> rulesCount = programs.stream()
-                .filter(p -> p.isParticipationConfirmed())
-                .sorted((p1, p2) -> Integer.compare(p1.getRules().size(), p2.getRules().size()))
-                .map(p -> p.getRules().size())
-                .collect(Collectors.toList());
+        Integer rulesCount = programs.stream().map(p -> p.getRules().size()).reduce(0, Integer::sum);
 
-        return new MeasuredValues(time, rulesCount);
+        MeasuredValues measured = new MeasuredValues(new ArrayList<>(), new ArrayList<>());
+        measured.rulesCount.add(rulesCount);
+        measured.time.add((end - start) / 1000);
+
+        System.out.println("Distributed(single-threaded) ended.");
+        return measured;
     }
 }

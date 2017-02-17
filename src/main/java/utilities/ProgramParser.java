@@ -19,6 +19,7 @@ import java.util.stream.Stream;
 public class ProgramParser {
 
     public static List<Program> parseStream(Stream<String> lineStream) {
+        System.out.println("Parsing programs.");
         List<Program> programs = new ArrayList<>();
 
         lineStream.forEach((String line) -> {
@@ -50,6 +51,8 @@ public class ProgramParser {
                 }
             }
         });
+
+        System.out.println("Programs parsed.");
         return programs;
     }
 }

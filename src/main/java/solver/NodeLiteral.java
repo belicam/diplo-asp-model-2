@@ -3,6 +3,7 @@ package solver;
 import core.Literal;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -16,7 +17,7 @@ import java.util.HashSet;
 public class NodeLiteral extends Node {
 
     private Literal literal;
-    private ArrayList<NodeRule> nrules;
+    private List<NodeRule> nrules;
 
     private boolean derived = false;
 
@@ -37,8 +38,10 @@ public class NodeLiteral extends Node {
     public void fire(HashSet<Literal> smodel) {
         if (!this.nrules.isEmpty()) {
             if (!derived) {
-                this.nrules.stream().forEach(nr -> nr.fire(this, smodel));
                 derived = true;
+                for (NodeRule nr : this.nrules) {
+                    nr.fire(this, smodel);
+                }
             }
         }
     }
@@ -60,7 +63,7 @@ public class NodeLiteral extends Node {
     /**
      * @return the rule
      */
-    public ArrayList<NodeRule> getNodeRules() {
+    public List<NodeRule> getNodeRules() {
         return nrules;
     }
 
