@@ -28,7 +28,11 @@ public class ProgramGenerator {
 
         for (int programLabel = 0; programLabel < programsCount; programLabel++) {
             result.add("#" + programLabel);
-            int numRules = maxRulesCount - rand.nextInt(Math.round(maxRulesCount * 0.2f));
+            int dev = Math.round(maxRulesCount * 0.2f);
+            int numRules = maxRulesCount;
+            if (dev > 0) {
+                numRules -= rand.nextInt(dev);
+            }
 
             Map<String, Set<Set<String>>> generated = new HashMap<>();
             for (int j = 0; j < numRules; j++) {
@@ -59,6 +63,9 @@ public class ProgramGenerator {
                 });
             });
         }
+
+//        result.forEach(line -> System.out.println(line));
+//        System.out.println("------------------------------------");
 
         System.out.println("Programs generated.");
         return result;

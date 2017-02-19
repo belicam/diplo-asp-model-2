@@ -30,12 +30,12 @@ public class ProgramParser {
                     // create instance of new program
                     String programName = line.substring(1);
                     Program newprogram = new Program(programName);
-                    
+
                     programs.add(newprogram);
                 } else {
                     String[] splitted = line.split(":-", 2);
                     Rule r = new Rule();
-                    
+
                     if (!splitted[0].isEmpty()) {
                         r.setHead(new Constant(splitted[0]));
                     }
@@ -45,7 +45,7 @@ public class ProgramParser {
                             r.addToBody(new Constant(bodyLit));
                         }
                     }
-                    
+
                     if (!programs.isEmpty()) {
                         programs.get(programs.size() - 1).addRule(r);
                     }
