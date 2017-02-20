@@ -22,20 +22,16 @@ public class ProgramGenerator {
 
     static Random rand = new Random();
 
-    public static List<String> generate(int programsCount, String[] base, int maxRulesCount, int maxBodyCount) {
+    public static List<String> generate(int programsCount, String[] base, int rulesCount, int maxBodyCount) {
         System.out.println("Generating programs.");
         List<String> result = new ArrayList<>();
 
         for (int programLabel = 0; programLabel < programsCount; programLabel++) {
             result.add("#" + programLabel);
-            int dev = Math.round(maxRulesCount * 0.2f);
-            int numRules = maxRulesCount;
-            if (dev > 0) {
-                numRules -= rand.nextInt(dev);
-            }
 
             Map<String, Set<Set<String>>> generated = new HashMap<>();
-            for (int j = 0; j < numRules; j++) {
+            int generatedCount = 0;
+            while (generatedCount < rulesCount) {
                 String head = programLabel + ":" + base[rand.nextInt(base.length)];
                 if (!generated.containsKey(head)) {
                     generated.put(head, new HashSet<>());
@@ -53,7 +49,9 @@ public class ProgramGenerator {
                     }
                 }
 
-                generated.get(head).add(body);
+                if (generated.get(head).add(body)) {
+                    generatedCount++;
+                }
             }
 
             generated.forEach((h, bodies) -> {
@@ -67,7 +65,7 @@ public class ProgramGenerator {
 //        result.forEach(line -> System.out.println(line));
 //        System.out.println("------------------------------------");
 
-        System.out.println("Programs generated.");
+        System.out.println("Programs generated. Number of rules: " + (result.size() - programsCount));
         return result;
     }
 }
