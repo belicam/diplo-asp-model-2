@@ -15,6 +15,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.stream.Collectors;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
@@ -99,9 +100,12 @@ public class GraphRenderer {
 
         DeviationRenderer renderer = new DeviationRenderer(true, false);
         Stroke stroke = new BasicStroke(2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+        Random rand = new Random();
         for (int i = 0; i < dataset.getSeriesCount(); i++) {
             renderer.setSeriesStroke(i, stroke);
-            Color color = new Color((int) (Math.random() * 256), (int) (Math.random() * 256), (int) (Math.random() * 256));
+//            Color color = new Color((int) (Math.random() * 256), (int) (Math.random() * 256), (int) (Math.random() * 256)).darker();
+//            System.out.println("utilities.GraphRenderer.createGraph(): " + i * (360 / dataset.getSeriesCount()));
+            Color color = Color.getHSBColor(i * (1.0f / dataset.getSeriesCount()), 1, 1).darker();
             renderer.setSeriesPaint(i, color);
             renderer.setSeriesFillPaint(i, color);
         }

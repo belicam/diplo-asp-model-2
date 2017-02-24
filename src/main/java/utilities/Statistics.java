@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import messages.InitMessage;
 import solver.TreeSolver;
 
@@ -27,7 +26,7 @@ public class Statistics {
 
 //    public static int MAX_RULES_COUNT = 50;
     public static int PROGRAMS_COUNT;
-    public static int ITERATIONS_COUNT = 50;
+    public static int ITERATIONS_COUNT = 100;
 
     public static String[] BASE_LITERALS = "a,b,c,d,e,f".split(",");
 

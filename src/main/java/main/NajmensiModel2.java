@@ -18,42 +18,12 @@ public class NajmensiModel2 {
      */
     public static void main(String[] args) {
         Statistics.PROGRAMS_COUNT = 10;
+        Statistics.ITERATIONS_COUNT = 100;
 
-        int[] rulesCnt = new int[]{10, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000, 200000, 500000, 1000000};
-        Statistics.singleThreadedVsNonDist(rulesCnt);
-        Statistics.multiThreadedVsNonDist(rulesCnt);
+        int[] rulesCnt = new int[]{100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000};
         Statistics.multiThreadedVsSingleThreaded(rulesCnt);
-        
-
-//        List<Program> programs = new ArrayList<>();
-//        Router router = new Router();
-//
-//        try (Stream<String> stream = Files.lines(Paths.get("bugged.txt"))) {
-//            programs = ProgramParser.parseStream(stream);
-//        } catch (IOException ex) {
-//            Logger.getLogger(NajmensiModel2.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//
-//        for (Program p : programs) {
-//            p.setRouter(router);
-//            router.addProgram(p);
-//        }
-//
-//        ExecutorService executor = Executors.newCachedThreadPool();
-//        for (Program p : programs) {
-//            p.setRouter(router);
-//            router.addProgram(p);
-//            executor.execute(p);
-//        }
-//
-//        router.sendMessage(programs.get(0).getLabel(), new InitMessage());
-//        executor.shutdown();
-//
-//        try {
-//            executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-//        } catch (InterruptedException e) {
-//        }
-//
+        Statistics.multiThreadedVsNonDist(rulesCnt);
+        Statistics.singleThreadedVsNonDist(rulesCnt);
     }
 
 }
