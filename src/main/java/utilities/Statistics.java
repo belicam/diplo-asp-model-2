@@ -41,15 +41,18 @@ public class Statistics {
         }
     }
 
-    public static void singleThreadedVsNonDist(int[] rulesCount) {
+    public static void measure(int[] rulesCount) {
         GraphRenderer grenderer = new GraphRenderer("Number of programs: " + PROGRAMS_COUNT);
 
+        String multiThreadedLabel = "Multi-threaded distributed";
         String singleThreadedLabel = "Single-threaded distributed";
         String nonDistLabel = "Non-distributed";
 
+        grenderer.newSeries(multiThreadedLabel);
         grenderer.newSeries(singleThreadedLabel);
         grenderer.newSeries(nonDistLabel);
 
+        MeasuredValues measuredMulti = new MeasuredValues(new ArrayList<>(), new ArrayList<>());
         MeasuredValues measuredSingle = new MeasuredValues(new ArrayList<>(), new ArrayList<>());
         MeasuredValues measuredNonDist = new MeasuredValues(new ArrayList<>(), new ArrayList<>());
         for (int cnt : rulesCount) {
@@ -58,75 +61,32 @@ public class Statistics {
                 int programRulesCount = cnt / PROGRAMS_COUNT;
                 List<String> generated = ProgramGenerator.generate(PROGRAMS_COUNT, BASE_LITERALS, programRulesCount, MAX_RULE_BODY_SIZE);
 
-                measuredSingle = runSingleThreaded(generated, measuredSingle);
-
-                measuredNonDist = runNonDist(generated, measuredNonDist);
-                System.out.println("Rules count: " + cnt + "| Iteration " + i + " ended.");
-            }
-        }
-
-        grenderer.addValuesToSeries(singleThreadedLabel, measuredSingle.rulesCount, measuredSingle.time);
-        grenderer.addValuesToSeries(nonDistLabel, measuredNonDist.rulesCount, measuredNonDist.time);
-        grenderer.createGraph();
-    }
-
-    public static void multiThreadedVsNonDist(int[] rulesCount) {
-        GraphRenderer grenderer = new GraphRenderer("Number of programs: " + PROGRAMS_COUNT);
-
-        String multiThreadedLabel = "Multi-threaded distributed";
-        String nonDistLabel = "Non-distributed";
-
-        grenderer.newSeries(multiThreadedLabel);
-        grenderer.newSeries(nonDistLabel);
-
-        MeasuredValues measuredMulti = new MeasuredValues(new ArrayList<>(), new ArrayList<>());
-        MeasuredValues measuredNonDist = new MeasuredValues(new ArrayList<>(), new ArrayList<>());
-        for (int cnt : rulesCount) {
-            for (int i = 0; i < ITERATIONS_COUNT; i++) {
-                System.out.println("Rules count: " + cnt + "| Iteration " + i + " started.");
-                int programRulesCount = cnt / PROGRAMS_COUNT;
-                List<String> generated = ProgramGenerator.generate(PROGRAMS_COUNT, BASE_LITERALS, programRulesCount, MAX_RULE_BODY_SIZE);
-
-                measuredMulti = runMultiThreaded(generated, measuredMulti);
-
-                measuredNonDist = runNonDist(generated, measuredNonDist);
-                System.out.println("Rules count: " + cnt + "| Iteration " + i + " ended.");
-            }
-        }
-
-        grenderer.addValuesToSeries(multiThreadedLabel, measuredMulti.rulesCount, measuredMulti.time);
-        grenderer.addValuesToSeries(nonDistLabel, measuredNonDist.rulesCount, measuredNonDist.time);
-        grenderer.createGraph();
-    }
-
-    public static void multiThreadedVsSingleThreaded(int[] rulesCount) {
-        GraphRenderer grenderer = new GraphRenderer("Number of programs: " + PROGRAMS_COUNT);
-
-        String multiThreadedLabel = "Multi-threaded distributed";
-        String singleThreadedLabel = "Single-threaded distributed";
-
-        grenderer.newSeries(multiThreadedLabel);
-        grenderer.newSeries(singleThreadedLabel);
-
-        MeasuredValues measuredMulti = new MeasuredValues(new ArrayList<>(), new ArrayList<>());
-        MeasuredValues measuredSingle = new MeasuredValues(new ArrayList<>(), new ArrayList<>());
-        for (int cnt : rulesCount) {
-            for (int i = 0; i < ITERATIONS_COUNT; i++) {
-                System.out.println("Rules count: " + cnt + "| Iteration " + i + " started.");
-                int programRulesCount = cnt / PROGRAMS_COUNT;
-                List<String> generated = ProgramGenerator.generate(PROGRAMS_COUNT, BASE_LITERALS, programRulesCount, MAX_RULE_BODY_SIZE);
-
                 measuredMulti = runMultiThreaded(generated, measuredMulti);
                 measuredSingle = runSingleThreaded(generated, measuredSingle);
+                measuredNonDist = runNonDist(generated, measuredNonDist);
+
                 System.out.println("Rules count: " + cnt + "| Iteration " + i + " ended.");
             }
         }
 
         grenderer.addValuesToSeries(multiThreadedLabel, measuredMulti.rulesCount, measuredMulti.time);
         grenderer.addValuesToSeries(singleThreadedLabel, measuredSingle.rulesCount, measuredSingle.time);
-        grenderer.createGraph();
-    }
+        grenderer.addValuesToSeries(nonDistLabel, measuredNonDist.rulesCount, measuredNonDist.time);
 
+        grenderer.finalizeSeries();
+
+//        vytvorenie grafu po 2 seriach 
+        String[] allSeries = new String[]{multiThreadedLabel, singleThreadedLabel, nonDistLabel};
+        List<String> seriesToGraph = new ArrayList<>();
+        for (int i = 0; i < allSeries.length - 1; i++) {
+            for (int j = i + 1; j < allSeries.length; j++) {
+                seriesToGraph.clear();
+                seriesToGraph.add(allSeries[i]);
+                seriesToGraph.add(allSeries[j]);
+                grenderer.createGraph(seriesToGraph);
+            }
+        }
+    }
 
     private static MeasuredValues runNonDist(List<String> generatedPrograms, MeasuredValues measured) {
         System.out.println("Non-distributed started.");

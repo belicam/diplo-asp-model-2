@@ -15,6 +15,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 import java.util.stream.Collectors;
 import org.jfree.chart.ChartFactory;
@@ -33,14 +34,16 @@ import org.jfree.ui.RectangleInsets;
  */
 public class GraphRenderer {
 
-    YIntervalSeriesCollection dataset;
+    List<YIntervalSeries> finalizedSeries;
     String chartTitle;
 
     Map<String, Map<Integer, List<Long>>> seriesData;
+    Map<String, Color> graphColors;
 
     public GraphRenderer(String chartTitle) {
         this.seriesData = new HashMap<>();
-        this.dataset = new YIntervalSeriesCollection();
+        this.finalizedSeries = new ArrayList<>();
+        this.graphColors = new HashMap<>();
         this.chartTitle = chartTitle;
     }
 
@@ -57,30 +60,45 @@ public class GraphRenderer {
         seriesData.put(name, new HashMap<>());
     }
 
-    private void finalizeSeries() {
+    public void finalizeSeries() {
 //        vypocet odchylky z hodnot + pridanie series do datasetu
+        finalizedSeries.clear();
+        graphColors.clear();
 
-        seriesData.entrySet().forEach((serie) -> {
-            YIntervalSeries newSeries = new YIntervalSeries(serie.getKey());
+        seriesData
+                .entrySet()
+                .forEach((serie) -> {
+                    YIntervalSeries newSeries = new YIntervalSeries(serie.getKey());
 
-            serie.getValue().entrySet().forEach(point -> {
-                double mean = point.getValue().stream().collect(Collectors.summingLong(Long::longValue)) / point.getValue().size();
+                    serie.getValue().entrySet().forEach(point -> {
+                        double mean = point.getValue().stream().collect(Collectors.summingLong(Long::longValue)) / point.getValue().size();
 
-                double meanSum = point.getValue().stream()
-                        .map((y) -> Math.pow(y - mean, 2))
-                        .collect(Collectors.summingDouble(Double::doubleValue));
+                        double meanSum = point.getValue().stream()
+                                .map((y) -> Math.pow(y - mean, 2))
+                                .collect(Collectors.summingDouble(Double::doubleValue));
 
-                double stddev = Math.sqrt(meanSum / point.getValue().size());
+                        double stddev = Math.sqrt(meanSum / point.getValue().size());
 
-                newSeries.add(point.getKey(), mean, mean - stddev, mean + stddev);
-            });
+                        newSeries.add(point.getKey(), mean, mean - stddev, mean + stddev);
+                    });
 
-            dataset.addSeries(newSeries);
-        });
+                    finalizedSeries.add(newSeries);
+                });
+
+//        nastavenie farieb serii
+        for (int i = 0; i < finalizedSeries.size(); i++) {
+            graphColors.put((String) finalizedSeries.get(i).getKey(), Color.getHSBColor(i * (1.0f / seriesData.size()), 1, 1).darker());
+        }
+
     }
 
-    public void createGraph() {
-        finalizeSeries();
+    public void createGraph(List<String> seriesToGraph) {
+        YIntervalSeriesCollection dataset = new YIntervalSeriesCollection();
+
+//        add to dataset only wanted series
+        finalizedSeries.stream()
+                .filter(serie -> seriesToGraph.contains((String) serie.getKey()))
+                .forEach(serie -> dataset.addSeries(serie));
 
         JFreeChart lineChart = ChartFactory.createXYLineChart(
                 chartTitle,
@@ -100,14 +118,10 @@ public class GraphRenderer {
 
         DeviationRenderer renderer = new DeviationRenderer(true, false);
         Stroke stroke = new BasicStroke(2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
-        Random rand = new Random();
         for (int i = 0; i < dataset.getSeriesCount(); i++) {
             renderer.setSeriesStroke(i, stroke);
-//            Color color = new Color((int) (Math.random() * 256), (int) (Math.random() * 256), (int) (Math.random() * 256)).darker();
-//            System.out.println("utilities.GraphRenderer.createGraph(): " + i * (360 / dataset.getSeriesCount()));
-            Color color = Color.getHSBColor(i * (1.0f / dataset.getSeriesCount()), 1, 1).darker();
-            renderer.setSeriesPaint(i, color);
-            renderer.setSeriesFillPaint(i, color);
+            renderer.setSeriesPaint(i, graphColors.get((String) dataset.getSeries(i).getKey()));
+            renderer.setSeriesFillPaint(i, graphColors.get((String) dataset.getSeries(i).getKey()));
         }
         renderer.setAlpha(0.12f);
 
@@ -119,7 +133,7 @@ public class GraphRenderer {
         /* Height of the image */
 
         try {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("HH-mm-ss__yyyy-MM-dd");
+            SimpleDateFormat dateFormat = new SimpleDateFormat("HH-mm-ss__yyyy-MM-dd" + Math.random() * 1000);
             File chartFile = new File("charts/" + dateFormat.format(new Date()) + ".jpg");
             ChartUtilities.saveChartAsJPEG(chartFile, lineChart, width, height);
         } catch (Exception e) {

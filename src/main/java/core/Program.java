@@ -21,9 +21,9 @@ import messages.FireRequestMessage;
 import messages.GetRequestMessage;
 import messages.InitMessage;
 import messages.StopMessage;
-import phases.Phase;
-import phases.PhaseOne;
-import phases.PhaseTwo;
+import core.phases.Phase;
+import core.phases.PhaseOne;
+import core.phases.PhaseTwo;
 
 /**
  *
