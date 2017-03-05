@@ -11,10 +11,8 @@ import core.Rule;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import messages.FireRequestMessage;
 import messages.FireResponseMessage;
 import messages.FiringEndedMessage;
@@ -70,8 +68,7 @@ public class PhaseTwo implements Phase {
             
             // test  ci skoncili vsetci
             if (!participatedFiringEnded.containsValue(Boolean.FALSE)) {
-//                TODO VYMYSLET INAK
-                program.getRouter().broadcastMessage(new StopMessage());
+                program.broadcastMessage(new StopMessage());
             }
         }
     }

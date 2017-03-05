@@ -83,6 +83,10 @@ public class Program implements Runnable {
         router.sendMessage(receiverLabel, message);
     }
 
+    public void broadcastMessage(Object message) {
+        router.broadcastMessage(message);
+    }
+
     public void receiveMessage(Object message) {
         messages.add(message);
     }

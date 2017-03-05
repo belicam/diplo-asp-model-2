@@ -120,7 +120,7 @@ public class PhaseOne implements Phase {
 
         externals.keySet().forEach(key -> {
             Object childMessage = new GetRequestMessage(program.generateMessageId(), program.getLabel(), initialSender, externals.get(key));
-            program.getRouter().sendMessage(key, childMessage);
+            program.sendMessage(key, childMessage);
 
             activeMessages.addChildMessage(parentMessage, key, childMessage);
         });
