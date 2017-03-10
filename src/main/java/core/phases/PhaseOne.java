@@ -120,16 +120,15 @@ public class PhaseOne implements Phase {
 
         externals.keySet().forEach(key -> {
             Object childMessage = new GetRequestMessage(program.generateMessageId(), program.getLabel(), initialSender, externals.get(key));
-            program.sendMessage(key, childMessage);
-
             activeMessages.addChildMessage(parentMessage, key, childMessage);
+            program.sendMessage(key, childMessage);
         });
         rulesChecked = true;
     }
 
     private void checkGetResponses() {
         if (program.isParticipationConfirmed() && activeMessages.noMessages()) {
-            if (program.isInitialProgram()) {
+            if (program.isInitialProgram() && resolvedParent.isEmpty()) {
                 sendMessage(program.getLabel(), new DependencyGraphBuiltMessage());
             } else {
                 resolvedParent.entrySet().forEach((parent) -> {
