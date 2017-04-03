@@ -6,6 +6,7 @@
 package utilities;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -64,8 +65,66 @@ public class ProgramGenerator {
 
 //        result.forEach(line -> System.out.println(line));
 //        System.out.println("------------------------------------");
-
         System.out.println("Programs generated. Number of rules: " + (result.size() - programsCount));
+        return result;
+    }
+
+    public static List<String> generateLinked(int programsCount, String[] base, int rulesCount, int maxBodyCount) {
+        List<String> result = new ArrayList<>();
+
+        List<List<String>> allHeads = new ArrayList<>();
+        List<List<List<String>>> allBodies = new ArrayList<>();
+
+        allHeads.add(generateHeads(rulesCount, generateProgramName(0), base));
+        allBodies.add(null);
+
+        for (int i = 1; i < programsCount; i++) {
+            allBodies.add(generateBodies(rulesCount, (String[]) allHeads.get(i - 1).toArray(), maxBodyCount));
+            allHeads.add(generateHeads(rulesCount, generateProgramName(i), base));
+        }
+
+        allBodies.set(0, generateBodies(rulesCount, (String[]) allHeads.get(allHeads.size() - 1).toArray(), maxBodyCount));
+
+        for (int i = 0; i < programsCount; i++) {
+            result.addAll(joinProgramData(generateProgramName(i), allHeads.get(i), allBodies.get(i)));
+        } 
+        return result;
+    }
+
+    public static List<String> generateHeads(int count, String programName, String[] base) {
+        List<String> result = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            result.add(programName + ":" + base[rand.nextInt(base.length)]);
+        }
+        return result;
+    }
+
+    public static List<List<String>> generateBodies(int count, String[] availableLiterals, int maxBodyCount) {
+        int numBodyLits = rand.nextInt(maxBodyCount);
+
+        List<List<String>> bodies = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            List<String> body = new ArrayList<>();
+            for (int k = 0; k < numBodyLits; k++) {
+                body.add(availableLiterals[rand.nextInt(availableLiterals.length)]);
+            }
+            bodies.add(body);
+        }
+        return bodies;
+    }
+
+    private static String generateProgramName(int id) {
+        return "agent" + id;
+    }
+
+    public static List<String> joinProgramData(String programName, List<String> heads, List<List<String>> bodies) {
+        List<String> result = new ArrayList<>();
+        result.add(programName);
+
+        for (int i = 0; i < heads.size(); i++) {
+            String rule = heads.get(i) + ":-" + String.join(",", bodies.get(i));
+            result.add(rule);
+        }
         return result;
     }
 }
