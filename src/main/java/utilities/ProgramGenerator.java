@@ -79,19 +79,21 @@ public class ProgramGenerator {
         allBodies.add(null);
 
         for (int i = 1; i < programsCount; i++) {
-            allBodies.add(generateBodies(rulesCount, (String[]) allHeads.get(i - 1).toArray(), maxBodyCount));
+            String[] arrayHeads = allHeads.get(i - 1).toArray(new String[allHeads.get(i - 1).size()]);
+            allBodies.add(generateBodies(rulesCount, arrayHeads, maxBodyCount));
             allHeads.add(generateHeads(rulesCount, generateProgramName(i), base));
         }
 
-        allBodies.set(0, generateBodies(rulesCount, (String[]) allHeads.get(allHeads.size() - 1).toArray(), maxBodyCount));
+        String[] arrayHeads = allHeads.get(allHeads.size() - 1).toArray(new String[allHeads.get(allHeads.size() - 1).size()]);
+        allBodies.set(0, generateBodies(rulesCount, arrayHeads, maxBodyCount));
 
         for (int i = 0; i < programsCount; i++) {
             result.addAll(joinProgramData(generateProgramName(i), allHeads.get(i), allBodies.get(i)));
-        } 
+        }
         return result;
     }
 
-    public static List<String> generateHeads(int count, String programName, String[] base) {
+    private static List<String> generateHeads(int count, String programName, String[] base) {
         List<String> result = new ArrayList<>();
         for (int i = 0; i < count; i++) {
             result.add(programName + ":" + base[rand.nextInt(base.length)]);
@@ -99,11 +101,11 @@ public class ProgramGenerator {
         return result;
     }
 
-    public static List<List<String>> generateBodies(int count, String[] availableLiterals, int maxBodyCount) {
-        int numBodyLits = rand.nextInt(maxBodyCount);
-
+    private static List<List<String>> generateBodies(int count, String[] availableLiterals, int maxBodyCount) {
         List<List<String>> bodies = new ArrayList<>();
+
         for (int i = 0; i < count; i++) {
+            int numBodyLits = rand.nextInt(maxBodyCount);
             List<String> body = new ArrayList<>();
             for (int k = 0; k < numBodyLits; k++) {
                 body.add(availableLiterals[rand.nextInt(availableLiterals.length)]);
@@ -117,9 +119,9 @@ public class ProgramGenerator {
         return "agent" + id;
     }
 
-    public static List<String> joinProgramData(String programName, List<String> heads, List<List<String>> bodies) {
+    private static List<String> joinProgramData(String programName, List<String> heads, List<List<String>> bodies) {
         List<String> result = new ArrayList<>();
-        result.add(programName);
+        result.add("#" + programName);
 
         for (int i = 0; i < heads.size(); i++) {
             String rule = heads.get(i) + ":-" + String.join(",", bodies.get(i));
