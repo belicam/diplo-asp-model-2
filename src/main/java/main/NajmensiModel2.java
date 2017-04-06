@@ -22,6 +22,7 @@ public class NajmensiModel2 {
 
         int[] rulesCnt = new int[]{100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000};
         Statistics.measure(rulesCnt);
+        Statistics.makeGraph();
     }
 
 }

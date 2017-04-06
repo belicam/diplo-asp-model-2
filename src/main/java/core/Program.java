@@ -62,6 +62,21 @@ public class Program implements Runnable {
         this.router = router;
     }
 
+    public void reset() {
+        askedLiterals.clear();
+        participatedPrograms.clear();
+        smallestModel.clear();
+        messages.clear();
+        router = null;
+        phase = null;
+        initialProgramLabel = null;
+        messageIdCounter = 0;
+        participationConfirmed = false;
+        running = true;
+        startTime = 0;
+        endTime = 0;
+    }
+
     @Override
     public void run() {
         while (isRunning()) {
