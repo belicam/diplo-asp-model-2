@@ -78,8 +78,10 @@ public class PhaseOne implements Phase {
             checkRules(message, program.getInitialProgramLabel());
             sendMessage(program.getInitialProgramLabel(), new NotifyParticipationRequestMessage(program.generateMessageId(), program.getLabel()));
 
-            if (activeMessages.noMessages()) {
+            if (activeMessages.noMessages() && program.isParticipationConfirmed()) {
                 sendMessage(from, new GetResponseMessage(program.generateMessageId(), program.getLabel(), request.getId()));
+            } else {
+                resolvedParent.put(from, message);
             }
         }
     }
