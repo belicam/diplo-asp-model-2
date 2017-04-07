@@ -5,6 +5,7 @@
  */
 package main;
 
+import utilities.ProgramGenerator;
 import utilities.Statistics;
 
 /**
@@ -21,7 +22,13 @@ public class NajmensiModel2 {
         Statistics.ITERATIONS_COUNT = 100;
 
         int[] rulesCnt = new int[]{100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000};
-        Statistics.measure(rulesCnt);
+        Statistics.measure(rulesCnt, ProgramGenerator::generateRandom);
+        Statistics.makeGraph();
+
+        Statistics.measure(rulesCnt, ProgramGenerator::generateSequential);
+        Statistics.makeGraph();
+
+        Statistics.measure(rulesCnt, ProgramGenerator::generateChained);
         Statistics.makeGraph();
     }
 

@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  *
@@ -23,17 +25,24 @@ public class ProgramGenerator {
 
     static Random rand = new Random();
 
-    public static List<String> generate(int programsCount, String[] base, int rulesCount, int maxBodyCount) {
+    @FunctionalInterface
+    public interface Function4<A, B, C, D, R> {
+
+        public R apply(A a, B b, C c, D d);
+    }
+
+    public static List<String> generateRandom(Integer programsCount, String[] base, Integer rulesCount, Integer maxBodyCount) {
         System.out.println("Generating programs.");
         List<String> result = new ArrayList<>();
 
-        for (int programLabel = 0; programLabel < programsCount; programLabel++) {
-            result.add("#" + programLabel);
+        for (int i = 0; i < programsCount; i++) {
+            String programName = generateProgramName(i);
+            result.add("#" + programName);
 
             Map<String, Set<Set<String>>> generated = new HashMap<>();
             int generatedCount = 0;
             while (generatedCount < rulesCount) {
-                String head = programLabel + ":" + base[rand.nextInt(base.length)];
+                String head = programName + ":" + base[rand.nextInt(base.length)];
                 if (!generated.containsKey(head)) {
                     generated.put(head, new HashSet<>());
                 }
@@ -42,7 +51,7 @@ public class ProgramGenerator {
 
                 Set<String> body = new HashSet<>();
                 for (int k = 0; k < numBodyLits; k++) {
-                    int litRef = rand.nextInt(programsCount);
+                    String litRef = generateProgramName(rand.nextInt(programsCount));
                     String bodyLit = litRef + ":" + base[rand.nextInt(base.length)];
 
                     if (!bodyLit.equals(head)) {
@@ -62,14 +71,10 @@ public class ProgramGenerator {
                 });
             });
         }
-
-//        result.forEach(line -> System.out.println(line));
-//        System.out.println("------------------------------------");
-        System.out.println("Programs generated. Number of rules: " + (result.size() - programsCount));
         return result;
     }
 
-    public static List<String> generateLinked(int programsCount, String[] base, int rulesCount, int maxBodyCount) {
+    public static List<String> generateSequential(Integer programsCount, String[] base, Integer rulesCount, Integer maxBodyCount) {
         List<String> result = new ArrayList<>();
 
         List<List<String>> allHeads = new ArrayList<>();
@@ -90,6 +95,66 @@ public class ProgramGenerator {
         for (int i = 0; i < programsCount; i++) {
             result.addAll(joinProgramData(generateProgramName(i), allHeads.get(i), allBodies.get(i)));
         }
+        return result;
+    }
+
+    public static List<String> generateChained(Integer programsCount, String[] base, Integer rulesCount, Integer maxBodyCount) {
+        List<String> result = new ArrayList<>();
+
+        List<List<String>> allHeads = new ArrayList<>();
+        List<List<List<String>>> allBodies = new ArrayList<>();
+
+//        allHeads.add(generateHeads(rulesCount, generateProgramName(0), base));
+//        allBodies.add(null);
+//
+//        for (int i = 1; i < programsCount; i++) {
+//            List<String> collected = IntStream.range(0, i)
+//                    .mapToObj(ix -> allHeads.get(ix))
+//                    .reduce(new ArrayList<>(), (res, a) -> {
+//                        res.addAll(a);
+//                        return res;
+//                    });
+//
+//            String[] arrayHeads = collected.toArray(new String[collected.size()]);
+//            allBodies.add(generateBodies(rulesCount, arrayHeads, maxBodyCount));
+//            allHeads.add(generateHeads(rulesCount, generateProgramName(i), base));
+//        }
+//
+//        List<String> collected = IntStream.range(1, programsCount)
+//                .mapToObj(ix -> allHeads.get(ix))
+//                .reduce(new ArrayList<>(), (res, a) -> {
+//                    res.addAll(a);
+//                    return res;
+//                });
+//
+//        String[] arrayHeads = collected.toArray(new String[collected.size()]);
+//        allBodies.set(0, generateBodies(rulesCount, arrayHeads, maxBodyCount));
+//
+//        for (int i = 0; i < programsCount; i++) {
+//            result.addAll(joinProgramData(generateProgramName(i), allHeads.get(i), allBodies.get(i)));
+//        }
+        for (int i = 0; i < programsCount; i++) {
+            allHeads.add(generateHeads(rulesCount, generateProgramName(i), base));
+        }
+
+        for (int i = 0; i < programsCount; i++) {
+            final int actualIndex = i;
+            
+            List<String> collected = IntStream.range(0, programsCount)
+                    .filter(ix -> ix != actualIndex)
+                    .mapToObj(ix -> allHeads.get(ix))
+                    .reduce(new ArrayList<>(), (res, a) -> {
+                        res.addAll(a);
+                        return res;
+                    });
+
+            String[] availableLiterals = collected.toArray(new String[collected.size()]);
+            List<List<String>> bodies = generateBodies(rulesCount, availableLiterals, maxBodyCount);
+            result.addAll(joinProgramData(generateProgramName(i), allHeads.get(i), bodies));
+        }
+
+//        System.out.println("utilities.ProgramGenerator.generateConnected()");
+//        result.stream().forEach(System.out::println);
         return result;
     }
 

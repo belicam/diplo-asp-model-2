@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -56,7 +57,7 @@ public class Statistics {
         }
     }
 
-    public static void measure(int[] rulesCount) {
+    public static void measure(int[] rulesCount, ProgramGenerator.Function4<Integer, String[], Integer, Integer, List<String>> generatorFunc) {
         for (int cnt : rulesCount) {
             MeasuredValues measuredMulti = new MeasuredValues(new ArrayList<>(), new ArrayList<>());
             MeasuredValues measuredSingle = new MeasuredValues(new ArrayList<>(), new ArrayList<>());
@@ -66,7 +67,7 @@ public class Statistics {
                 System.out.println("Rules count: " + cnt + "| Iteration " + i + " started.");
                 int programRulesCount = cnt / PROGRAMS_COUNT;
 
-                List<String> generated = ProgramGenerator.generateLinked(PROGRAMS_COUNT, BASE_LITERALS, programRulesCount, MAX_RULE_BODY_SIZE);
+                List<String> generated = generatorFunc.apply(PROGRAMS_COUNT, BASE_LITERALS, programRulesCount, MAX_RULE_BODY_SIZE);
                 List<Program> distProgs = ProgramParser.parseStream(generated.stream());
 
                 measuredMulti = runMultiThreaded(distProgs, measuredMulti);
@@ -126,8 +127,9 @@ public class Statistics {
     private static MeasuredValues runNonDist(List<Program> programs, MeasuredValues measured) {
         System.out.println("Non-distributed started.");
 
-        long start = System.nanoTime();
         Program p = programs.get(0);
+
+        long start = System.nanoTime();
         TreeSolver solver = new TreeSolver(p.getRules());
         solver.findSmallestModel(new HashSet<>());
         long end = System.nanoTime();
