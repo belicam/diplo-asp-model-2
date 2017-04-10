@@ -6,15 +6,12 @@
 package utilities;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
@@ -104,57 +101,70 @@ public class ProgramGenerator {
         List<List<String>> allHeads = new ArrayList<>();
         List<List<List<String>>> allBodies = new ArrayList<>();
 
-//        allHeads.add(generateHeads(rulesCount, generateProgramName(0), base));
-//        allBodies.add(null);
-//
-//        for (int i = 1; i < programsCount; i++) {
-//            List<String> collected = IntStream.range(0, i)
-//                    .mapToObj(ix -> allHeads.get(ix))
-//                    .reduce(new ArrayList<>(), (res, a) -> {
-//                        res.addAll(a);
-//                        return res;
-//                    });
-//
-//            String[] arrayHeads = collected.toArray(new String[collected.size()]);
-//            allBodies.add(generateBodies(rulesCount, arrayHeads, maxBodyCount));
-//            allHeads.add(generateHeads(rulesCount, generateProgramName(i), base));
-//        }
-//
-//        List<String> collected = IntStream.range(1, programsCount)
-//                .mapToObj(ix -> allHeads.get(ix))
-//                .reduce(new ArrayList<>(), (res, a) -> {
-//                    res.addAll(a);
-//                    return res;
-//                });
-//
-//        String[] arrayHeads = collected.toArray(new String[collected.size()]);
-//        allBodies.set(0, generateBodies(rulesCount, arrayHeads, maxBodyCount));
-//
-//        for (int i = 0; i < programsCount; i++) {
-//            result.addAll(joinProgramData(generateProgramName(i), allHeads.get(i), allBodies.get(i)));
-//        }
         for (int i = 0; i < programsCount; i++) {
             allHeads.add(generateHeads(rulesCount, generateProgramName(i), base));
         }
 
-        for (int i = 0; i < programsCount; i++) {
-            final int actualIndex = i;
-            
-            List<String> collected = IntStream.range(0, programsCount)
-                    .filter(ix -> ix != actualIndex)
-                    .mapToObj(ix -> allHeads.get(ix))
-                    .reduce(new ArrayList<>(), (res, a) -> {
-                        res.addAll(a);
-                        return res;
-                    });
+        List<String> collected = allHeads
+                .stream()
+                .reduce(new ArrayList<>(), (res, a) -> {
+                    res.addAll(a);
+                    return res;
+                });
 
-            String[] availableLiterals = collected.toArray(new String[collected.size()]);
+        String[] availableLiterals = collected.toArray(new String[collected.size()]);
+
+        for (int i = 0; i < programsCount; i++) {
             List<List<String>> bodies = generateBodies(rulesCount, availableLiterals, maxBodyCount);
             result.addAll(joinProgramData(generateProgramName(i), allHeads.get(i), bodies));
         }
 
-//        System.out.println("utilities.ProgramGenerator.generateConnected()");
-//        result.stream().forEach(System.out::println);
+        return result;
+    }
+
+    public static List<String> generateSeparated(Integer programsCount, String[] base, Integer rulesCount, Integer maxBodyCount) {
+        List<String> result = new ArrayList<>();
+
+        List<List<String>> allHeads = new ArrayList<>();
+
+        int firstGroup = rand.nextInt(programsCount / 2) + 1;
+        for (int i = 0; i < firstGroup; i++) {
+            allHeads.add(generateHeads(rulesCount, generateProgramName(i), base));
+        }
+
+        List<String> collectedHeads = allHeads
+                .stream()
+                .reduce(new ArrayList<>(), (res, a) -> {
+                    res.addAll(a);
+                    return res;
+                });
+
+        String[] availableLiterals = collectedHeads.toArray(new String[collectedHeads.size()]);
+
+        for (int i = 0; i < firstGroup; i++) {
+            List<List<String>> bodies = generateBodies(rulesCount, availableLiterals, maxBodyCount);
+            result.addAll(joinProgramData(generateProgramName(i), allHeads.get(i), bodies));
+        }
+
+//        SECOND GROUP
+        for (int i = firstGroup; i < programsCount; i++) {
+            allHeads.add(generateHeads(rulesCount, generateProgramName(i), base));
+        }
+
+        collectedHeads = allHeads
+                .stream()
+                .reduce(new ArrayList<>(), (res, a) -> {
+                    res.addAll(a);
+                    return res;
+                });
+
+        availableLiterals = collectedHeads.toArray(new String[collectedHeads.size()]);
+
+        for (int i = firstGroup; i < programsCount; i++) {
+            List<List<String>> bodies = generateBodies(rulesCount, availableLiterals, maxBodyCount);
+            result.addAll(joinProgramData(generateProgramName(i), allHeads.get(i), bodies));
+        }
+
         return result;
     }
 
