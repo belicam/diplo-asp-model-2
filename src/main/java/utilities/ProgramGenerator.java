@@ -6,13 +6,8 @@
 package utilities;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
-import java.util.Set;
-import java.util.stream.IntStream;
 
 /**
  *
@@ -26,49 +21,6 @@ public class ProgramGenerator {
     public interface Function4<A, B, C, D, R> {
 
         public R apply(A a, B b, C c, D d);
-    }
-
-    public static List<String> generateRandom(Integer programsCount, String[] base, Integer rulesCount, Integer maxBodyCount) {
-        System.out.println("Generating programs.");
-        List<String> result = new ArrayList<>();
-
-        for (int i = 0; i < programsCount; i++) {
-            String programName = generateProgramName(i);
-            result.add("#" + programName);
-
-            Map<String, Set<Set<String>>> generated = new HashMap<>();
-            int generatedCount = 0;
-            while (generatedCount < rulesCount) {
-                String head = programName + ":" + base[rand.nextInt(base.length)];
-                if (!generated.containsKey(head)) {
-                    generated.put(head, new HashSet<>());
-                }
-
-                int numBodyLits = rand.nextInt(maxBodyCount);
-
-                Set<String> body = new HashSet<>();
-                for (int k = 0; k < numBodyLits; k++) {
-                    String litRef = generateProgramName(rand.nextInt(programsCount));
-                    String bodyLit = litRef + ":" + base[rand.nextInt(base.length)];
-
-                    if (!bodyLit.equals(head)) {
-                        body.add(bodyLit);
-                    }
-                }
-
-                if (generated.get(head).add(body)) {
-                    generatedCount++;
-                }
-            }
-
-            generated.forEach((h, bodies) -> {
-                bodies.forEach(b -> {
-                    String rule = h + ":-" + String.join(",", b);
-                    result.add(rule);
-                });
-            });
-        }
-        return result;
     }
 
     public static List<String> generateSequential(Integer programsCount, String[] base, Integer rulesCount, Integer maxBodyCount) {
@@ -127,7 +79,7 @@ public class ProgramGenerator {
 
         List<List<String>> allHeads = new ArrayList<>();
 
-        int firstGroup = rand.nextInt(programsCount / 2) + 1;
+        int firstGroup = rand.nextInt((programsCount - 1) / 3) + 1;
         for (int i = 0; i < firstGroup; i++) {
             allHeads.add(generateHeads(rulesCount, generateProgramName(i), base));
         }
