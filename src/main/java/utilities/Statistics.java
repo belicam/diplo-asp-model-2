@@ -70,10 +70,10 @@ public class Statistics {
                 List<String> generated = generatorFunc.apply(PROGRAMS_COUNT, BASE_LITERALS, programRulesCount, MAX_RULE_BODY_SIZE);
                 List<Program> distProgs = ProgramParser.parseStream(generated.stream());
 
-                measuredMulti = runMultiThreaded(distProgs, measuredMulti);
+                measuredSingle = runSingleThreaded(distProgs, measuredSingle);
 
                 distProgs.forEach(p -> p.reset());
-                measuredSingle = runSingleThreaded(distProgs, measuredSingle);
+                measuredMulti = runMultiThreaded(distProgs, measuredMulti);
 
                 for (int j = 0; j < distProgs.size(); j++) {
                     distProgs.get(j).reset();

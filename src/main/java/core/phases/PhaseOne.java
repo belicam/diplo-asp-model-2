@@ -27,7 +27,7 @@ public class PhaseOne implements Phase {
 
     private final Program program;
     private final ActiveMessages activeMessages;
-    
+
     private Map<String, Object> resolvedParent = new HashMap<>();
     private boolean rulesChecked;
 
@@ -64,7 +64,7 @@ public class PhaseOne implements Phase {
         program.setStartTime(System.nanoTime());
 
         program.setInitialProgramLabel(request.getInitialSender());
-        
+
         request.getLits().forEach(lit -> {
             if (!program.getAskedLiterals().containsKey(lit)) {
                 program.getAskedLiterals().put(lit, new HashSet<>());
@@ -78,10 +78,12 @@ public class PhaseOne implements Phase {
             checkRules(message, program.getInitialProgramLabel());
             sendMessage(program.getInitialProgramLabel(), new NotifyParticipationRequestMessage(program.generateMessageId(), program.getLabel()));
 
-            if (activeMessages.noMessages() && program.isParticipationConfirmed()) {
-                sendMessage(from, new GetResponseMessage(program.generateMessageId(), program.getLabel(), request.getId()));
-            } else {
-                resolvedParent.put(from, message);
+            if (activeMessages.noMessages()) {
+                if (program.isParticipationConfirmed()) {
+                    sendMessage(from, new GetResponseMessage(program.generateMessageId(), program.getLabel(), request.getId()));
+                } else {
+                    resolvedParent.put(from, message);
+                }
             }
         }
     }

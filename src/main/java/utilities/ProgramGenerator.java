@@ -51,7 +51,6 @@ public class ProgramGenerator {
         List<String> result = new ArrayList<>();
 
         List<List<String>> allHeads = new ArrayList<>();
-        List<List<List<String>>> allBodies = new ArrayList<>();
 
         for (int i = 0; i < programsCount; i++) {
             allHeads.add(generateHeads(rulesCount, generateProgramName(i), base));
@@ -79,7 +78,7 @@ public class ProgramGenerator {
 
         List<List<String>> allHeads = new ArrayList<>();
 
-        int firstGroup = rand.nextInt((programsCount - 1) / 3) + 1;
+        int firstGroup = rand.nextInt((programsCount - 1) / 20) + 1;
         for (int i = 0; i < firstGroup; i++) {
             allHeads.add(generateHeads(rulesCount, generateProgramName(i), base));
         }
