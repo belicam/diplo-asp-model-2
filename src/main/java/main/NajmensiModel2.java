@@ -22,15 +22,19 @@ public class NajmensiModel2 {
         Statistics.ITERATIONS_COUNT = 100;
 
         int[] rulesCnt = new int[]{100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000};
+        
+        final String sepSuffix = "sep";
+        final String seqSuffix = "seq";
+        final String chainSuffix = "chain";
+        
+        Statistics.measure(rulesCnt, ProgramGenerator::generateSeparated, sepSuffix);
+        Statistics.makeGraph(sepSuffix);
 
-        Statistics.measure(rulesCnt, ProgramGenerator::generateSeparated);
-        Statistics.makeGraph();        
+        Statistics.measure(rulesCnt, ProgramGenerator::generateSequential, seqSuffix);
+        Statistics.makeGraph(seqSuffix);
 
-        Statistics.measure(rulesCnt, ProgramGenerator::generateSequential);
-        Statistics.makeGraph();
-
-        Statistics.measure(rulesCnt, ProgramGenerator::generateChained);
-        Statistics.makeGraph();
+        Statistics.measure(rulesCnt, ProgramGenerator::generateChained, chainSuffix);
+        Statistics.makeGraph(chainSuffix);
 
     }
 

@@ -7,6 +7,7 @@ package utilities;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Stroke;
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -102,19 +103,28 @@ public class GraphRenderer {
 
         JFreeChart lineChart = ChartFactory.createXYLineChart(
                 chartTitle,
-                "Number of Rules", "Time (µs)",
+                "Number of Rules", "Time (ms)",
                 dataset,
                 PlotOrientation.VERTICAL,
                 true, true, false
         );
 
+        Font labelsFont = new Font("Dialog", Font.PLAIN, 25);
+        Font tickFont = new Font("Dialog", Font.PLAIN, 20);
+
         lineChart.setBackgroundPaint(Color.white);
+        lineChart.getLegend().setItemFont(tickFont);
 
         XYPlot plot = (XYPlot) lineChart.getPlot();
         plot.setBackgroundPaint(Color.WHITE);
         plot.setAxisOffset(new RectangleInsets(5.0, 5.0, 5.0, 5.0));
         plot.setDomainGridlinePaint(Color.LIGHT_GRAY);
         plot.setRangeGridlinePaint(Color.LIGHT_GRAY);
+
+        plot.getDomainAxis().setLabelFont(labelsFont);
+        plot.getDomainAxis().setTickLabelFont(tickFont);
+        plot.getRangeAxis().setLabelFont(labelsFont);
+        plot.getRangeAxis().setTickLabelFont(tickFont);
 
         DeviationRenderer renderer = new DeviationRenderer(true, false);
         Stroke stroke = new BasicStroke(2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);

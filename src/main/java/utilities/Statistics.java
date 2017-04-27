@@ -57,7 +57,7 @@ public class Statistics {
         }
     }
 
-    public static void measure(int[] rulesCount, ProgramGenerator.Function4<Integer, String[], Integer, Integer, List<String>> generatorFunc) {
+    public static void measure(int[] rulesCount, ProgramGenerator.Function4<Integer, String[], Integer, Integer, List<String>> generatorFunc, String fileSuffix) {
         for (int cnt : rulesCount) {
             MeasuredValues measuredMulti = new MeasuredValues(new ArrayList<>(), new ArrayList<>());
             MeasuredValues measuredSingle = new MeasuredValues(new ArrayList<>(), new ArrayList<>());
@@ -85,11 +85,11 @@ public class Statistics {
 
                 System.out.println("Rules count: " + cnt + "| Iteration " + i + " ended.");
             }
-            saveMeasured(measuredMulti, measuredSingle, measuredNonDist, cnt);
+            saveMeasured(measuredMulti, measuredSingle, measuredNonDist, cnt, fileSuffix);
         }
     }
 
-    public static void makeGraph() {
+    public static void makeGraph(String generatorNameSuffix) {
         GraphRenderer grenderer = new GraphRenderer("Number of programs: " + PROGRAMS_COUNT);
 
         final String multiThreadedLabel = "Multi-threaded distributed";
@@ -100,13 +100,13 @@ public class Statistics {
         grenderer.newSeries(singleThreadedLabel);
         grenderer.newSeries(nonDistLabel);
 
-        MeasuredValues measuredMulti = loadMeasured(distMultiFilePrefix);
+        MeasuredValues measuredMulti = loadMeasured(distMultiFilePrefix, generatorNameSuffix);
         grenderer.addValuesToSeries(multiThreadedLabel, measuredMulti.rulesCount, measuredMulti.time);
 
-        MeasuredValues measuredSingle = loadMeasured(distSingleFilePrefix);
+        MeasuredValues measuredSingle = loadMeasured(distSingleFilePrefix, generatorNameSuffix);
         grenderer.addValuesToSeries(singleThreadedLabel, measuredSingle.rulesCount, measuredSingle.time);
 
-        MeasuredValues measuredNonDist = loadMeasured(nonDistFilePrefix);
+        MeasuredValues measuredNonDist = loadMeasured(nonDistFilePrefix, generatorNameSuffix);
         grenderer.addValuesToSeries(nonDistLabel, measuredNonDist.rulesCount, measuredNonDist.time);
 
         grenderer.finalizeSeries();
@@ -134,7 +134,7 @@ public class Statistics {
         solver.findSmallestModel(new HashSet<>());
         long end = System.nanoTime();
 
-        measured.time.add((end - start) / 1000);
+        measured.time.add((end - start) / 1000000);
         measured.rulesCount.add(p.getRules().size());
 
         System.out.println("Non-distributed ended.");
@@ -170,7 +170,7 @@ public class Statistics {
         int rulesCount = programs.stream().map(p -> p.getRules().size()).reduce(0, Integer::sum);
 
         measured.rulesCount.add(rulesCount);
-        measured.time.add((end - start) / 1000);
+        measured.time.add((end - start) / 1000000);
 
         return measured;
     }
@@ -198,28 +198,28 @@ public class Statistics {
         int rulesCount = programs.stream().map(p -> p.getRules().size()).reduce(0, Integer::sum);
 
         measured.rulesCount.add(rulesCount);
-        measured.time.add((end - start) / 1000);
+        measured.time.add((end - start) / 1000000);
 
         System.out.println("Distributed(single-threaded) ended.");
         return measured;
     }
 
-    private static void saveMeasured(MeasuredValues distMulti, MeasuredValues distSingle, MeasuredValues nonDist, int rulesCount) {
+    private static void saveMeasured(MeasuredValues distMulti, MeasuredValues distSingle, MeasuredValues nonDist, int rulesCount, String fileSuffix) {
         try {
-            Files.write(Paths.get(folderMeasuredValues + distMultiFilePrefix + rulesCount + ".ser"), Serializer.serialize(distMulti));
-            Files.write(Paths.get(folderMeasuredValues + distSingleFilePrefix + rulesCount + ".ser"), Serializer.serialize(distSingle));
-            Files.write(Paths.get(folderMeasuredValues + nonDistFilePrefix + rulesCount + ".ser"), Serializer.serialize(nonDist));
+            Files.write(Paths.get(folderMeasuredValues + distMultiFilePrefix + rulesCount + "_" + fileSuffix + ".ser"), Serializer.serialize(distMulti));
+            Files.write(Paths.get(folderMeasuredValues + distSingleFilePrefix + rulesCount + "_" + fileSuffix + ".ser"), Serializer.serialize(distSingle));
+            Files.write(Paths.get(folderMeasuredValues + nonDistFilePrefix + rulesCount + "_" + fileSuffix + ".ser"), Serializer.serialize(nonDist));
         } catch (IOException ex) {
             Logger.getLogger(Statistics.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-    private static MeasuredValues loadMeasured(String filePrefix) {
+    private static MeasuredValues loadMeasured(String filePrefix, String fileSuffix) {
         MeasuredValues measured = new MeasuredValues(new ArrayList<>(), new ArrayList<>());
 
         try (Stream<Path> stream = Files.list(Paths.get(folderMeasuredValues))) {
             List<Path> filtered = stream
-                    .filter(path -> path.getFileName().toString().startsWith(filePrefix))
+                    .filter(path -> path.getFileName().toString().matches(filePrefix + "(.*)" + fileSuffix + "\\.ser"))
                     .collect(Collectors.toList());
 
             filtered.forEach((path) -> {
